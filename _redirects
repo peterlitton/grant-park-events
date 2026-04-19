@@ -1,0 +1,24 @@
+# ================================================
+# NETLIFY REDIRECTS - GRANT PARK EVENTS
+# ================================================
+# Updated: 2026-02-10 (Build10.14.10.1)
+# ================================================
+
+# DOMAIN CONSOLIDATION (Build10.14.1)
+# Force naked domain → www to prevent duplicate indexing
+# Documentation: /docs/DOMAIN-CONSOLIDATION-WWW.md
+https://grantparkevents.com/* https://www.grantparkevents.com/:splat 301!
+http://grantparkevents.com/* https://www.grantparkevents.com/:splat 301!
+
+# Static assets - serve as-is (don't route to React)
+/assets/*          /assets/:splat     200
+
+# Current event URLs - serve React app for routing
+/events/*          /index.html        200
+
+# Build10.14.10.1: Route RSS feed to serverless function (before catch-all)
+/rss.xml             /.netlify/functions/rss-feed         200
+
+# Catch-all - everything else serves React app
+# Note: Netlify automatically exempts /.netlify/functions/* from catch-all
+/*                 /index.html        200

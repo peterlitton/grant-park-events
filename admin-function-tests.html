@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GPE Function Tests - build67</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .pass { color: #22c55e; }
+    .fail { color: #ef4444; }
+    .pending { color: #f59e0b; }
+  </style>
+</head>
+<body class="bg-gray-100 p-8">
+  <div class="max-w-4xl mx-auto">
+    <h1 class="text-3xl font-bold mb-2">Netlify Function Tests</h1>
+    <p class="text-gray-600 mb-6">build67 - Simplified workflow (Manual MailerLite)</p>
+    
+    <div class="mb-6">
+      <button onclick="runAllTests()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 mr-2">
+        Run All Tests
+      </button>
+      <button onclick="clearResults()" class="bg-gray-600 text-white px-4 py-2 rounded-lg hover:bg-gray-700">
+        Clear
+      </button>
+    </div>
+    
+    <!-- Test Results -->
+    <div id="results" class="space-y-4">
+      <!-- Results will be inserted here -->
+    </div>
+    
+    <!-- Individual Test Buttons -->
+    <div class="mt-8 grid grid-cols-2 md:grid-cols-3 gap-3">
+      <button onclick="testFunction('get-events')" class="bg-white border px-4 py-2 rounded hover:bg-gray-50 text-sm">
+        Test: get-events
+      </button>
+      <button onclick="testFunction('get-campaigns')" class="bg-white border px-4 py-2 rounded hover:bg-gray-50 text-sm">
+        Test: get-campaigns
+      </button>
+      <button onclick="testFunction('test-mailerlite')" class="bg-white border px-4 py-2 rounded hover:bg-gray-50 text-sm">
+        Test: MailerLite API
+      </button>
+      <button onclick="testGenerateHtml()" class="bg-white border px-4 py-2 rounded hover:bg-gray-50 text-sm">
+        Test: generate-email-html
+      </button>
+      <button onclick="testScrapeEvent()" class="bg-white border px-4 py-2 rounded hover:bg-gray-50 text-sm">
+        Test: scrape-event
+      </button>
+      <button onclick="testSubscribe()" class="bg-white border px-4 py-2 rounded hover:bg-gray-50 text-sm">
+        Test: subscribe-mailerlite
+      </button>
+      <button onclick="testGoogleApiConnection()" class="bg-white border border-green-500 px-4 py-2 rounded hover:bg-green-50 text-sm">
+        Test: Google API Connection
+      </button>
+      <button onclick="testGoogleApiAuth()" class="bg-white border border-green-500 px-4 py-2 rounded hover:bg-green-50 text-sm">
+        Test: Google Authentication
+      </button>
+      <button onclick="testGoogleSingleUrl()" class="bg-white border border-green-500 px-4 py-2 rounded hover:bg-green-50 text-sm">
+        Test: Single URL Submission
+      </button>
+      <button onclick="testGoogleStatus()" class="bg-white border border-green-500 px-4 py-2 rounded hover:bg-green-50 text-sm">
+        Test: Status Check
+      </button>
+      <button onclick="testGoogleErrorHandling()" class="bg-white border border-green-500 px-4 py-2 rounded hover:bg-green-50 text-sm">
+        Test: Error Handling
+      </button>
+      <button onclick="exportTestReport()" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 text-sm">
+        📄 Export Test Report
+      </button>
+    </div>
+    
+    <!-- Workflow Info -->
+    <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+      <h3 class="font-bold text-blue-800 mb-2">📧 Email Campaign Workflow</h3>
+      <ol class="text-sm text-blue-700 list-decimal list-inside space-y-1">
+        <li>Create campaign in Admin → Email Campaigns</li>
+        <li>Click "Preview" to verify content</li>
+        <li>Click "Copy HTML" to copy to clipboard</li>
+        <li>In MailerLite: Create Campaign → Custom HTML Editor → Paste</li>
+        <li>Enable "Google Analytics link tracking" before sending</li>
+        <li>Send test email to yourself, then schedule/send</li>
+        <li>Back in Admin: Click "Mark Sent" to update status</li>
+      </ol>
+    </div>
+  </div>
+
+  <script>
+    const resultsDiv = document.getElementById('results');
+    
+    function addResult(name, status, message, details = null) {
+      const statusClass = status === 'PASS' ? 'pass' : status === 'FAIL' ? 'fail' : 'pending';
+      const statusIcon = status === 'PASS' ? '✅' : status === 'FAIL' ? '❌' : '⏳';
+      
+      const div = document.createElement('div');
+      div.className = 'bg-white rounded-lg shadow p-4';
+      div.innerHTML = `
+        <div class="flex items-center justify-between">
+          <div class="font-semibold">${name}</div>
+          <div class="${statusClass} font-bold">${statusIcon} ${status}</div>
+        </div>
+        <div class="text-gray-600 text-sm mt-1">${message}</div>
+        ${details ? `<pre class="text-xs bg-gray-100 p-2 mt-2 rounded overflow-x-auto">${JSON.stringify(details, null, 2)}</pre>` : ''}
+      `;
+      resultsDiv.appendChild(div);
+    }
+    
+    function clearResults() {
+      resultsDiv.innerHTML = '';
+    }
+    
+    async function testFunction(name) {
+      addResult(name, 'PENDING', 'Testing...');
+      
+      try {
+        const response = await fetch(`/.netlify/functions/${name}`);
+        const data = await response.json();
+        
+        // Remove the pending result
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok) {
+          if (data.overallStatus) {
+            // Has built-in status
+            addResult(name, data.overallStatus === 'ALL PASS' || data.overallStatus === 'PASS' ? 'PASS' : 'FAIL', 
+              `${data.passCount || 0}/${data.totalCount || 0} tests passed`, data.tests);
+          } else {
+            addResult(name, 'PASS', `HTTP ${response.status} - Response received`, 
+              Array.isArray(data) ? { count: data.length } : data);
+          }
+        } else {
+          addResult(name, 'FAIL', `HTTP ${response.status}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testGenerateHtml() {
+      const name = 'generate-email-html';
+      addResult(name, 'PENDING', 'Testing...');
+      
+      try {
+        const response = await fetch(`/.netlify/functions/${name}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            campaign: {
+              internalName: 'Test Campaign',
+              subject: 'Test Subject',
+              headline: 'Test Headline',
+              heroImage: 'navy-pier-fireworks.jpg'
+            },
+            events: [{
+              id: 1,
+              title: 'Test Event',
+              date: '2026-07-01',
+              time: '7:00 PM',
+              urlSlug: 'test-event-1'
+            }]
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok && data.html) {
+          addResult(name, 'PASS', `HTML generated (${data.html.length} characters)`, 
+            { htmlLength: data.html.length, preview: data.html.substring(0, 200) + '...' });
+        } else {
+          addResult(name, 'FAIL', `HTTP ${response.status}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testScrapeEvent() {
+      const name = 'scrape-event';
+      addResult(name, 'PENDING', 'Testing with grantparkmusicfestival.com...');
+      
+      try {
+        const response = await fetch(`/.netlify/functions/${name}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://www.grantparkmusicfestival.com/'
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok && !data.error) {
+          addResult(name, 'PASS', `Scraped: ${data.title || 'Unknown'}`, data);
+        } else {
+          addResult(name, 'FAIL', `HTTP ${response.status}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testSubscribe() {
+      const name = 'subscribe-mailerlite (validation only)';
+      addResult(name, 'PENDING', 'Testing validation...');
+      
+      try {
+        // Test with invalid email to verify function works without actually subscribing
+        const response = await fetch('/.netlify/functions/subscribe-mailerlite', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'invalid-email',
+            source: 'Page'
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        // We expect a 400 error for invalid email - that means the function is working
+        if (response.status === 400 && data.error === 'Invalid email format') {
+          addResult(name, 'PASS', 'Function working - correctly rejected invalid email', data);
+        } else if (response.ok) {
+          addResult(name, 'FAIL', 'Function accepted invalid email (unexpected)', data);
+        } else {
+          addResult(name, 'FAIL', `Unexpected response: ${response.status}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    // Google API Tests (Build62)
+    
+    async function testGoogleApiConnection() {
+      const name = 'Google API - Connection Test';
+      addResult(name, 'PENDING', 'Testing connection to Google Indexing API...');
+      
+      try {
+        const response = await fetch('/.netlify/functions/gsc-request-index', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://www.grantparkevents.com/'
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok && data.success) {
+          addResult(name, 'PASS', 'Successfully connected to Google API', data);
+        } else if (data.error && data.error.includes('GSC_CREDENTIALS')) {
+          addResult(name, 'FAIL', 'Credentials not configured in Netlify', data);
+        } else {
+          addResult(name, 'FAIL', `Error: ${data.error || 'Unknown'}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testGoogleApiAuth() {
+      const name = 'Google API - Authentication';
+      addResult(name, 'PENDING', 'Testing authentication credentials...');
+      
+      try {
+        const response = await fetch('/.netlify/functions/gsc-request-index', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://www.grantparkevents.com/about'
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok && data.success) {
+          addResult(name, 'PASS', 'Credentials valid and working', data);
+        } else if (data.error && data.error.includes('Invalid credentials')) {
+          addResult(name, 'FAIL', 'Invalid credentials - check service account setup', data);
+        } else {
+          addResult(name, 'FAIL', `Error: ${data.error || 'Unknown'}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testGoogleSingleUrl() {
+      const name = 'Google API - Single URL Submission';
+      addResult(name, 'PENDING', 'Submitting test URL to Google...');
+      
+      try {
+        const response = await fetch('/.netlify/functions/gsc-request-index', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://www.grantparkevents.com/signup'
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok && data.success) {
+          addResult(name, 'PASS', `URL submitted successfully: ${data.status}`, data);
+        } else {
+          addResult(name, 'FAIL', `Submission failed: ${data.error}`, data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testGoogleStatus() {
+      const name = 'Google API - Status Check';
+      addResult(name, 'PENDING', 'Checking index status from Google...');
+      
+      try {
+        const response = await fetch('/.netlify/functions/gsc-index-status');
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        if (response.ok && data.pages && data.pages.length > 0) {
+          const pageCount = data.pages.length;
+          const withRequests = data.pages.filter(p => p.requestData).length;
+          addResult(name, 'PASS', `Loaded ${pageCount} pages, ${withRequests} with request data`, 
+            { totalPages: pageCount, withRequestData: withRequests });
+        } else {
+          addResult(name, 'FAIL', 'No pages returned or error', data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    async function testGoogleErrorHandling() {
+      const name = 'Google API - Error Handling';
+      addResult(name, 'PENDING', 'Testing error handling with invalid URL...');
+      
+      try {
+        const response = await fetch('/.netlify/functions/gsc-request-index', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            url: 'https://www.grantparkevents.com/nonexistent-page-404-test'
+          })
+        });
+        
+        const data = await response.json();
+        resultsDiv.lastChild.remove();
+        
+        // For error handling test, we expect either success (Google queues it) or a handled error
+        if (response.ok || (data.error && data.details)) {
+          addResult(name, 'PASS', 'Error handling working correctly', data);
+        } else {
+          addResult(name, 'FAIL', 'Unexpected response', data);
+        }
+      } catch (error) {
+        resultsDiv.lastChild?.remove();
+        addResult(name, 'FAIL', error.message);
+      }
+    }
+    
+    function exportTestReport() {
+      const results = Array.from(document.querySelectorAll('#results > div')).map(div => {
+        const name = div.querySelector('.font-semibold').textContent;
+        const status = div.querySelector('.pass, .fail, .pending').textContent.replace(/[✅❌⏳]/g, '').trim();
+        const message = div.querySelector('.text-gray-600').textContent;
+        return { name, status, message };
+      });
+      
+      const report = {
+        build: 'build67',
+        timestamp: new Date().toISOString(),
+        results: results
+      };
+      
+      const blob = new Blob([JSON.stringify(report, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gpe-test-report-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      
+      addResult('Export Complete', 'INFO', 'Test report downloaded');
+    }
+    
+    async function runAllTests() {
+      clearResults();
+      
+      // Core Functions
+      await testFunction('get-events');
+      await testFunction('get-campaigns');
+      
+      // MailerLite API
+      await testFunction('test-mailerlite');
+      
+      // Email Generation
+      await testGenerateHtml();
+      
+      // Scraper
+      await testScrapeEvent();
+      
+      // Subscribe validation
+      await testSubscribe();
+      
+      // Google API Tests (Build62)
+      await testGoogleApiConnection();
+      await testGoogleApiAuth();
+      await testGoogleSingleUrl();
+      await testGoogleStatus();
+      await testGoogleErrorHandling();
+      
+      addResult('All Tests Complete', 'INFO', 'Review results above');
+    }
+  </script>
+</body>
+</html>

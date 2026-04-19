@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grant Park Events - Admin Login</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <meta name="robots" content="noindex, nofollow">
+</head>
+<body class="min-h-screen flex items-center justify-center p-4" style="background-color: #1e3a5f; background-image: url('data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2260%22 height=%2260%22 viewBox=%220 0 60 60%22><polygon points=%2230,10 33.8,23.4 47.3,20 37.6,30 47.3,40 33.8,36.6 30,50 26.2,36.6 12.7,40 22.4,30 12.7,20 26.2,23.4%22 fill=%22%232a4f7a%22 opacity=%220.5%22/></svg>'); background-size: 60px 60px;">
+  <!-- Build10.31.1: Star background, Chicago star icon, 429 rate limit handling -->
+  <div class="w-full max-w-sm">
+    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+      <!-- Header -->
+      <div class="bg-gradient-to-r from-red-600 to-red-700 text-white p-8 text-center">
+        <div class="flex justify-center mb-3">
+          <svg width="48" height="48" viewBox="0 0 48 48"><polygon points="24,6 27.1,17.5 39,14.8 31.1,24 39,33.2 27.1,30.5 24,42 20.9,30.5 9,33.2 16.9,24 9,14.8 20.9,17.5" fill="#93c5fd"/></svg>
+        </div>
+        <h1 class="text-2xl font-bold">Grant Park Events</h1>
+        <p class="text-red-100 text-sm mt-1">Control Panel</p>
+      </div>
+
+      <!-- Login Form -->
+      <div class="p-8">
+        <div id="error-msg" class="hidden mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm font-medium text-center"></div>
+
+        <label class="block text-sm font-semibold text-gray-700 mb-2" for="password">Password</label>
+        <input
+          type="password"
+          id="password"
+          class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg text-base focus:border-red-500 focus:outline-none mb-4"
+          placeholder="Enter admin password"
+          autofocus
+        >
+
+        <button
+          id="login-btn"
+          onclick="handleLogin()"
+          class="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-lg transition text-lg"
+        >
+          Log In
+        </button>
+      </div>
+    </div>
+
+    <p class="text-center text-blue-300 text-xs mt-6 opacity-60">grantparkevents.com</p>
+  </div>
+
+  <script>
+    // Enter key triggers login
+    document.getElementById('password').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleLogin();
+    });
+
+    async function handleLogin() {
+      const password = document.getElementById('password').value.trim();
+      const errorEl = document.getElementById('error-msg');
+      const btn = document.getElementById('login-btn');
+
+      if (!password) {
+        errorEl.textContent = 'Please enter a password';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      // Disable button during request
+      btn.disabled = true;
+      btn.textContent = 'Verifying...';
+      btn.classList.add('opacity-50', 'cursor-not-allowed');
+      errorEl.classList.add('hidden');
+
+      try {
+        const response = await fetch('/.netlify/functions/verify-admin-token', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ token: password })
+        });
+
+        if (response.ok) {
+          // Store token for API calls + existing auth keys for compatibility
+          sessionStorage.setItem('gpe_admin_token', password);
+          sessionStorage.setItem('gpe_admin_auth', 'authenticated');
+          sessionStorage.setItem('gpe_admin_time', String(Date.now()));
+          window.location.href = 'admin.html';
+        } else if (response.status === 429) {
+          errorEl.textContent = 'Too many failed attempts. Try again later.';
+          errorEl.classList.remove('hidden');
+        } else {
+          errorEl.textContent = 'Incorrect password';
+          errorEl.classList.remove('hidden');
+          document.getElementById('password').value = '';
+          document.getElementById('password').focus();
+        }
+      } catch (err) {
+        errorEl.textContent = 'Connection error. Please try again.';
+        errorEl.classList.remove('hidden');
+      }
+
+      // Re-enable button
+      btn.disabled = false;
+      btn.textContent = 'Log In';
+      btn.classList.remove('opacity-50', 'cursor-not-allowed');
+    }
+  </script>
+</body>
+</html>

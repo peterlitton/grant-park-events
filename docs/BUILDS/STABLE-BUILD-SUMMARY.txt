@@ -1,0 +1,93 @@
+================================================================================
+STABLE BUILD: v2.3.0-build20
+================================================================================
+
+Release Date: January 28, 2026
+Status: ✅ PRODUCTION STABLE
+Approved: YES
+
+================================================================================
+QUICK REFERENCE
+================================================================================
+
+WHAT'S NEW:
+- Rich text editor (bold, italic, lists, paragraphs)
+- Smart paste filter (strips colors/fonts, keeps formatting)
+- Image support (relative paths and URLs)
+- Modal UX improvements (stays open, scroll lock)
+- Clean admin preview cards (no HTML tags)
+- List display CSS (admin and index)
+- Version consistency enforcement
+
+FIXES: 15+ issues resolved across builds 15-20
+
+TESTING: All features approved
+
+DEPLOYMENT: Ready for production
+
+================================================================================
+FILE SIZES
+================================================================================
+
+admin.html:  79KB
+index.html:  73KB
+Package:     7.0MB
+
+================================================================================
+KEY FEATURES
+================================================================================
+
+1. RICH TEXT EDITOR
+   - Description, Featuring, Program fields
+   - Bold, Italic, Bullet lists, Numbered lists
+   - Formatting toolbar
+
+2. IMAGE HANDLING
+   - Relative paths: assets/events/image.jpg ✓
+   - Absolute URLs: https://example.com/image.jpg ✓
+   - Works in: Cards, Modals, Dedicated pages ✓
+
+3. PASTE FILTER
+   - Keeps: Bold, Italic, Lists, Paragraphs
+   - Strips: Colors, Fonts, Sizes, Spans, Divs
+
+4. UX IMPROVEMENTS
+   - Modal stays open (no accidental close)
+   - Page scroll locked when modal open
+   - Clean preview text (no HTML)
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+□ Extract package
+□ Upload to Netlify
+□ Test admin login
+□ Test event creation (with formatting)
+□ Test image upload (relative path)
+□ Test paste from external source
+□ Verify lists display (index page)
+□ Verify dedicated event pages
+□ Confirm version shows build20
+
+================================================================================
+KNOWN ISSUES
+================================================================================
+
+None critical.
+
+BUG-2026-002: Scraper fails on some URLs (low priority, manual entry available)
+
+================================================================================
+SUPPORT
+================================================================================
+
+Documentation: See v2.3.0-build20-RELEASE-NOTES.md
+Full details: See STABLE-RELEASE-v2.3.0-build20.md
+Build history: See individual build release notes (15-20)
+
+================================================================================
+
+✅ STABLE BUILD APPROVED FOR PRODUCTION USE
+
+================================================================================

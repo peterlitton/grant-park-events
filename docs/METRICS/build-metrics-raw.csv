@@ -1,0 +1,162 @@
+Version,Build,Date,Development Time (minutes),LLM,Source,Notes
+v2.2.1,v2.2.1,2026-01-22,20,Sonnet 4.5,Upload,Early v2.2.x build
+v2.2.1,v2.2.2,2026-01-24,15,Sonnet 4.5,Upload,v2.2.2 release
+v2.2.1,v2.2-Build5,2026-01-24,15,Sonnet 4.5,Upload,Early build numbering
+v2.2.1,v2.2-Build6,2026-01-24,15,Sonnet 4.5,Upload,SEO improvements
+v2.2.1,v2.2.3,2026-01-25,20,Sonnet 4.5,Upload,Initial v2.2.3
+v2.2.1,v2.2.3-tz-fix,2026-01-25,10,Sonnet 4.5,Upload,Timezone fix
+v2.2.1,v2.2.3-datefix,2026-01-25,10,Sonnet 4.5,Upload,Date fix iteration 1
+v2.2.1,v2.2.3-datefix.1,2026-01-25,5,Sonnet 4.5,Upload,Date fix iteration 2
+v2.2.1,v2.2.3.2,2026-01-25,10,Sonnet 4.5,Upload,v2.2.3.2
+v2.2.1,v2.2.3.3,2026-01-25,10,Sonnet 4.5,Upload,v2.2.3.3
+v2.2.1,v2.2.3.4,2026-01-25,10,Sonnet 4.5,Upload,v2.2.3.4
+v2.2.1,v2.2.3.5,2026-01-25,10,Sonnet 4.5,Upload,v2.2.3.5
+v2.2.1,v2.2.3.6,2026-01-25,15,Sonnet 4.5,Upload,v2.2.3.6 stable
+v2.2.1,v2.2.4,2026-01-25,20,Sonnet 4.5,Upload,v2.2.4 release
+v2.2.1,v2.2.4.1,2026-01-25,10,Sonnet 4.5,Upload,v2.2.4.1
+v2.2.1,v2.2.4.2,2026-01-25,10,Sonnet 4.5,Upload,v2.2.4.2
+v2.2.1,v2.2.5.1,2026-01-25,15,Sonnet 4.5,Upload,v2.2.5.1
+v2.2.1,v2.2.5.2,2026-01-25,10,Sonnet 4.5,Upload,v2.2.5.2
+v2.2.1,v2.2.5.4,2026-01-25,15,Sonnet 4.5,Upload,v2.2.5.4 with release notes
+v2.2.1,v2.2.5.5,2026-01-25,10,Sonnet 4.5,Upload,v2.2.5.5
+v2.2.1,v2.2.5.6,2026-01-25,10,Sonnet 4.5,Upload,v2.2.5.6
+v2.2.1,v2.2.5.7,2026-01-25,15,Sonnet 4.5,Upload,v2.2.5.7
+v2.2.1,v2.2.5.9,2026-01-28,10,Sonnet 4.5,Upload,v2.2.5.9
+v2.2.1,v2.2.5.10,2026-01-25,10,Sonnet 4.5,Upload,v2.2.5.10
+v2.2.1,v2.2.5.11,2026-01-25,10,Sonnet 4.5,Upload,v2.2.5.11
+v2.2.1,v2.2.5.12,2026-01-25,10,Sonnet 4.5,Upload,v2.2.5.12
+v2.2.1,v2.2.6-build2,2026-01-27,15,Sonnet 4.5,Upload,Has release notes
+v2.2.1,v2.2.6-build3,2026-01-27,10,Sonnet 4.5,Upload,Has release notes
+v2.2.1,v2.2.6-build4,2026-01-27,10,Sonnet 4.5,Upload,Has release notes
+v2.2.1,v2.2.6-build5,2026-01-27,10,Sonnet 4.5,Upload,Has release notes
+v2.3.0,Build1,2026-01-23,15,Sonnet 4.5,Estimated,Initial v2.3.0 setup (estimated)
+v2.3.0,Build2,2026-01-23,15,Sonnet 4.5,Estimated,Early development (estimated)
+v2.3.0,Build3,2026-01-24,15,Sonnet 4.5,Estimated,Early development (estimated)
+v2.3.0,Build4,2026-01-24,15,Sonnet 4.5,Estimated,Early development (estimated)
+v2.3.0,Build5,2026-01-27,30,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build6,2026-01-24,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build7,2026-01-24,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build8,2026-01-25,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build9,2026-01-25,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build10,2026-01-26,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build11,2026-01-26,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build12,2026-01-27,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build13,2026-01-27,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build14,2026-01-27,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build15,2026-01-28,30,Sonnet 4.5,Chat History,Estimated from summary
+v2.3.0,Build16,2026-01-28,25,Sonnet 4.5,Chat History,Estimated from summary
+v2.3.0,Build17,2026-01-28,10,Sonnet 4.5,Chat History,Estimated from summary
+v2.3.0,Build18,2026-01-28,15,Sonnet 4.5,Chat History,Estimated from summary
+v2.3.0,Build19,2026-01-28,20,Sonnet 4.5,Chat History,Estimated from summary
+v2.3.0,Build20,2026-01-28,15,Sonnet 4.5,Chat History,Estimated from summary
+v2.3.0,Build21,2026-01-28,8,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build22,2026-01-28,12,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build23,2026-01-29,45,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build24,2026-01-29,25,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build25,2026-01-29,20,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build26,2026-01-29,35,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build27,2026-01-29,15,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build28,2026-01-29,90,Sonnet 4.5,Chat History,Explicit time
+v2.3.0,Build29,2026-01-29,20,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build30,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build31,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build32,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build33,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build34,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build35,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build36,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build37,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build38,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build39,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build40,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build41,2026-01-29,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build42,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build43,2026-01-29,15,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build44,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build45,2026-01-29,15,Sonnet 4.5,Release Notes,From current build docs
+v2.3.0,Build46,2026-01-29,20,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build47,2026-01-30,20,Sonnet 4.5,Estimated,Gap fill (estimated)
+v2.3.0,Build48,2026-01-30,45,Sonnet 4.5,Chat History,Email campaign system - phase 1
+v2.3.0,Build49,2026-01-30,45,Sonnet 4.5,Chat History,Email campaign system - phase 2
+v2.3.0,Build50,2026-01-30,45,Sonnet 4.5,Chat History,Email campaign system - phase 3
+v2.3.0,Build51,2026-01-30,45,Sonnet 4.5,Chat History,Email campaign system - phase 4
+v2.3.0,Build52,2026-01-30,25,Sonnet 4.5,Chat History,Estimated
+v2.3.0,Build53,2026-01-30,15,Sonnet 4.5,Chat History,Estimated
+v2.3.0,Build54,2026-01-30,20,Sonnet 4.5,Chat History,Estimated
+v2.3.0,Build55,2026-01-30,15,Sonnet 4.5,Chat History,Estimated
+v2.3.0,Build56,2026-01-30,10,Sonnet 4.5,Chat History,Estimated
+v2.3.0,Build57,2026-01-30,20,Opus 4.5,Chat History,Estimated from compacted context
+v2.3.0,Build58,2026-01-30,15,Opus 4.5,Chat History,Estimated from compacted context
+v2.3.0,Build59,2026-01-30,15,Opus 4.5,Chat History,Estimated partial
+v2.3.0,Build60,2026-01-30,45,Opus 4.5,Chat History,Estimated
+v2.3.0,Build61,2026-01-30,40,Sonnet 4.5,Release Notes,Estimated from complexity
+v2.3.0,Build62,2026-01-30,40,Sonnet 4.5,Transcript,Explicit time
+v2.3.0,Build62.1,2026-01-30,5,Sonnet 4.5,Transcript,Estimated
+v2.3.0,Build62.2,2026-01-30,5,Sonnet 4.5,Transcript,Estimated
+v2.3.0,Build62.3,2026-01-30,10,Sonnet 4.5,Transcript,Estimated
+v2.3.0,Build63,2026-01-31,15,Sonnet 4.5,Transcript,Estimated
+v2.3.0,Build64,2026-01-31,10,Sonnet 4.5,Transcript,Estimated
+v2.3.0,Build65,2026-01-31,15,Sonnet 4.5,Transcript,Estimated
+v2.3.0,Build66,2026-01-31,20,Sonnet 4.5,Transcript,Explicit time
+v2.3.0,Build67,2026-01-31,23,Sonnet 4.5,Transcript,Explicit time
+v2.3.0,Build67.1,2026-01-31,12,Sonnet 4.5,Transcript,Explicit time
+v2.3.0,Build67.2,2026-01-31,8,Sonnet 4.5,Transcript,Explicit time
+v2.3.0,Build68,2026-01-31,40,Sonnet 4.5,Tracked,Explicit time
+v2.3.0,Build68.1,2026-01-31,5,Sonnet 4.5,Tracked,Explicit time
+v2.3.0,Build68.2,2026-01-31,5,Sonnet 4.5,Tracked,Explicit time
+v2.3.0,Build69.3,2026-02-01,15,Sonnet 4.5,Release Notes,Build Metrics tab implementation
+v2.3.1,Build1,2026-02-02,60,Sonnet 4.5,Transcript,Image Manager + Netlify Blobs
+v2.3.1,Build2,2026-02-02,30,Sonnet 4.5,Transcript,Cleanup
+v2.3.1,Build3,2026-02-03,45,Sonnet 4.5,Transcript,Image redirect implementation
+v2.3.1,Build4,2026-02-04,40,Sonnet 4.5,Transcript,Remove duplicate React load
+v2.3.1,Build5,2026-02-05,150,Sonnet 4.5,Transcript,PWA implementation
+v2.3.1,Build6,2026-02-05,30,Sonnet 4.5,Chat,Admin improvements + PWA merge
+v2.3.1,Build6.1,2026-02-05,15,Sonnet 4.5,Chat,Past events toggle (broken)
+v2.3.1,Build6.2,2026-02-05,20,Sonnet 4.5,Chat,Fix admin syntax error
+v2.3.1,Build6.3,2026-02-05,15,Sonnet 4.5,Release Notes,Version sync fixes
+v2.3.1,Build6.4,2026-02-05,10,Sonnet 4.5,Release Notes,Fix mobile menu version sync
+v2.3.1,Build6.5,2026-02-05,15,Sonnet 4.5,Release Notes,Fix admin version sync
+v2.3.1,Build7,2026-02-05,45,Sonnet 4.5,Release Notes,MailerLite Subscriber Dashboard
+v2.3.1,Build7.1,2026-02-05,10,Sonnet 4.5,Release Notes,Fix pagination + index.html version
+v2.3.1,Build8,2026-02-05,30,Sonnet 4.5,Release Notes,Growth charts and source breakdown
+v2.3.1,Build9,2026-02-05,20,Sonnet 4.5,Release Notes,CSV export + search/filter
+v2.3.1,Build10,2026-02-05,30,Sonnet 4.5,Release Notes,Admin nav restructure
+v2.3.1,Build10.1,2026-02-05,15,Sonnet 4.5,Release Notes,Admin nav refinement
+v2.3.1,Build10.2,2026-02-05,15,Sonnet 4.5,Release Notes,SEO + sitemap improvements
+v2.3.1,Build10.3,2026-02-05,15,Sonnet 4.5,Release Notes,Event Schema implementation
+v2.3.1,Build10.4,2026-02-05,15,Sonnet 4.5,Release Notes,Schema validation fixes
+v2.3.1,Build10.5,2026-02-05,20,Sonnet 4.5,Release Notes,Priority loading + background data
+v2.3.1,Build10.11,2026-02-06,30,Sonnet 4.5,Release Notes,GSC integration + Index Report
+v2.3.1,Build10.13,2026-02-07,40,Sonnet 4.5,Release Notes,Email campaign system
+v2.3.1,Build10.13.1,2026-02-07,15,Sonnet 4.5,Release Notes,Campaign refinements
+v2.3.1,Build10.13.2,2026-02-07,20,Sonnet 4.5,Release Notes,Pagination + future events filter
+v2.3.1,Build10.13.3,2026-02-07,15,Sonnet 4.5,Release Notes,Index report fixes
+v2.3.1,Build10.13.6,2026-02-07,25,Sonnet 4.5,Release Notes,Multi-fix build
+v2.3.1,Build10.13.7,2026-02-07,20,Sonnet 4.5,Release Notes,Real-time stats + Discovered/Pending cards
+v2.3.1,Build10.13.8,2026-02-07,25,Sonnet 4.5,Release Notes,Smart cache + bug fixes
+v2.3.1,Build10.13.9,2026-02-07,20,Sonnet 4.5,Release Notes,Cache fix + subscribers pre-load
+v2.3.1,Build10.13.10,2026-02-07,15,Sonnet 4.5,Release Notes,UI tweaks (6 items)
+v2.3.1,Build10.13.11,2026-02-08,25,Sonnet 4.5,Release Notes,Header adjust + About backend
+v2.3.1,Build10.13.12,2026-02-08,15,Sonnet 4.5,Release Notes,About editor fix + header border
+v2.3.1,Build10.13.13,2026-02-08,30,Sonnet 4.5,Release Notes,About textarea + Page Monitor + ES module
+v2.3.1,Build10.13.14,2026-02-08,20,Sonnet 4.5,Release Notes,Execution log + shadows + filters
+v2.3.1,Build10.13.15,2026-02-08,15,Sonnet 4.5,Release Notes,Shadow adjustments + filter fixes
+v2.3.1,Build10.13.16,2026-02-08,20,Sonnet 4.5,Estimated,About confirm + shadows + logo
+v2.3.1,Build10.13.17,2026-02-08,20,Sonnet 4.5,Estimated,Drop zone + index header + monitor confirm
+v2.3.1,Build10.13.18,2026-02-08,10,Sonnet 4.5,Estimated,Shadow revert
+v2.3.1,Build10.14,2026-02-08,25,Sonnet 4.5,Estimated,Admin nav category grouping
+v2.3.1,Build10.14.1,2026-02-09,20,Sonnet 4.5,Estimated,WWW domain consolidation
+v2.3.1,Build10.14.2,2026-02-09,30,Sonnet 4.5,Transcript,Run Now button + timezone fix
+v2.3.1,Build10.14.3,2026-02-09,20,Sonnet 4.5,Release Notes,URL parser fix + redirect cleanup
+v2.3.1,Build10.14.4,2026-02-09,25,Sonnet 4.5,Release Notes,Separate HTTP function for Run Now
+v2.3.1,Build10.14.5,2026-02-09,30,Sonnet 4.5,Release Notes,Text-only content hashing
+v2.3.1,Build10.14.6,2026-02-09,20,Sonnet 4.5,Release Notes,Test Email button on Monitor tab
+v2.3.1,Build10.14.7,2026-02-09,15,Sonnet 4.5,Transcript,Auto-reload after Run Now + test email
+v2.3.1,Build10.14.8,2026-02-09,45,Opus 4.6,Release Notes,7 queued fixes (monitor/about/popup/dropdown/email/chart/source)
+v2.3.1,Build10.14.8.1,2026-02-09,20,Opus 4.6,Release Notes,Popup dual write + inline status + PNG fix
+v2.3.1,Build10.14.8.2,2026-02-09,25,Opus 4.6,Release Notes,sw.js cache fix + popup migration + PNG fix
+v2.3.1,Build10.14.8.3,2026-02-09,30,Opus 4.6,Release Notes,Single-source version control (build-version.js)
+v2.3.1,Build10.14.8.4,2026-02-09,15,Opus 4.6,Release Notes,PNG CORS fix + popup Blobs on public site
+v2.3.1,Build10.14.9,2026-02-10,30,Opus 4.6,Release Notes,CSV backfill + GSC per-URL cache fix
+v2.3.1,Build10.14.10,2026-02-10,30,Opus 4.6,Release Notes,Edge Function canonical fix + sitemap routing
+v2.3.1,Build10.14.10.1,2026-02-10,20,Opus 4.6,Release Notes,RSS feed response format fix + sitemap redirect cleanup

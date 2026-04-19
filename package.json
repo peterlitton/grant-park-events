@@ -1,0 +1,11 @@
+{
+  "name": "grant-park-events",
+  "version": "2.3.1",
+  "private": true,
+  "description": "Grant Park Events - Chicago community events calendar",
+  "type": "module",
+  "dependencies": {
+    "@netlify/blobs": "^10.7.4",
+    "node-html-parser": "^6.1.12"
+  }
+}
