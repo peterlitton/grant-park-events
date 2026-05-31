@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.32.4';
-var BUILD_DATE = '2026-04-13';
-var BUILD_NOTES = 'Dashboard New Subscribers 24hr/7d/30d toggle; remove 50-row slice cap on get-subscriber-stats';
+var BUILD_VERSION = 'v2.3.1-Build10.33';
+var BUILD_DATE = '2026-05-31';
+var BUILD_NOTES = 'Weekend pill moved to top-right; isThisWeekend expanded to include Friday';

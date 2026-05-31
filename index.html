@@ -163,7 +163,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.32.4';
+    var BUILD_VERSION = 'v2.3.1-Build10.33';
     var BUILD_DATE = '2026-03-07';
   </script>
   
@@ -1437,9 +1437,12 @@
         const daysUntilSat=6-dayOfWeek;
         const sat=new Date(today);
         sat.setDate(today.getDate()+daysUntilSat);
+        const fri=new Date(sat);
+        fri.setDate(sat.getDate()-1);
         const sun=new Date(sat);
         sun.setDate(sat.getDate()+1);
-        return evDate.toDateString()===sat.toDateString()||evDate.toDateString()===sun.toDateString();
+        const evStr=evDate.toDateString();
+        return evStr===fri.toDateString()||evStr===sat.toDateString()||evStr===sun.toDateString();
       };
 
       const handleEmailSubmit=async(ev)=>{
@@ -1922,7 +1925,7 @@
                     e('span',{className:'opacity-0 group-hover:opacity-100 text-white font-bold text-lg bg-red-600 px-6 py-3 rounded-lg'},'View Details')
                   ),
                   (isToday(ev.date)||isThisWeekend(ev.date))?
-                  e('div',{className:'absolute top-4 left-4'},
+                  e('div',{className:'absolute top-4 right-4'},
                     e('span',{className:`text-xs font-bold px-3 py-1.5 rounded-full ${isToday(ev.date)?'bg-red-600 text-white':'bg-blue-600 text-white'}`},
                       isToday(ev.date)?'TODAY':'THIS WEEKEND'
                     )
