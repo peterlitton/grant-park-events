@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.33';
+var BUILD_VERSION = 'v2.3.1-Build10.33.1';
 var BUILD_DATE = '2026-05-31';
-var BUILD_NOTES = 'Weekend pill moved to top-right; isThisWeekend expanded to include Friday';
+var BUILD_NOTES = 'Email template: This Weeks Events heading, size/color updates, smart time ranges, PNG logo fix';

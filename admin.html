@@ -111,7 +111,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.33';
+    var BUILD_VERSION = 'v2.3.1-Build10.33.1';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -1952,10 +1952,15 @@
           iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:600px;border:none;';
           document.body.appendChild(iframe);
           
+          // Build10.33: Inject <base> tag so relative URLs resolve against admin origin
+          // Fallback in case base64 conversion fails for any image
+          const baseTag = `<base href="${window.location.origin}/">`;
+          const renderHtml = processedHtml.replace('<head>', '<head>' + baseTag);
+          
           // Write HTML to iframe
           const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
           iframeDoc.open();
-          iframeDoc.write(processedHtml);
+          iframeDoc.write(renderHtml);
           iframeDoc.close();
           
           // Wait for images to load

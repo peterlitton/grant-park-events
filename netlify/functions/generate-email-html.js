@@ -57,18 +57,31 @@ export default async (req, context) => {
       eventsHtml += `
         <tr>
           <td align="center" style="padding: 10px 30px ${bottomPadding};">
-            <h2 style="color: #d32f2f; font-size: 20px; margin: 0 0 2px; font-weight: bold;">${title}</h2>
+            <h2 style="color: #d32f2f; font-size: 22px; margin: 0 0 2px; font-weight: bold;">${title}</h2>
             <div style="margin: 0;">
       `;
       
       // Add each date/time as a link
       eventInstances.forEach(evt => {
         const formattedDate = formatDateTime(evt.date, evt.time);
+        let timeDisplay = formattedDate;
+        if (evt.endTime) {
+          const startLower = evt.time.toLowerCase();
+          const endLower = evt.endTime.toLowerCase();
+          const bothPm = startLower.includes('pm') && endLower.includes('pm');
+          const bothAm = startLower.includes('am') && endLower.includes('am');
+          if (bothPm || bothAm) {
+            const cleanStart = formatDateTime(evt.date, evt.time.replace(/\s*(am|pm)/i, ''));
+            timeDisplay = `${cleanStart} - ${evt.endTime}`;
+          } else {
+            timeDisplay = `${formattedDate} - ${evt.endTime}`;
+          }
+        }
         const eventUrl = `https://www.grantparkevents.com/events/${evt.urlSlug}`;
         
         eventsHtml += `
-              <a href="${eventUrl}" style="display: block; margin: 3px 0; color: #1976d2; text-decoration: none; font-size: 15px;">
-                ${formattedDate}
+              <a href="${eventUrl}" style="display: block; margin: 3px 0; color: #1976d2; text-decoration: none; font-size: 16px;">
+                ${timeDisplay}
               </a>
         `;
       });
@@ -137,6 +150,13 @@ export default async (req, context) => {
               <div style="color: #555555; font-size: 18px; line-height: 1.5;">${campaign.text}</div>
             </td>
           </tr>` : ''}
+          
+          <!-- Events Section Headline (Build10.33) -->
+          <tr>
+            <td align="center" style="padding: 20px 30px 10px;">
+              <h1 style="margin: 0; color: #333333; font-size: 22px; font-weight: bold;">This Week's Events</h1>
+            </td>
+          </tr>
           
           <!-- Events List (Centered) -->
           ${eventsHtml}
