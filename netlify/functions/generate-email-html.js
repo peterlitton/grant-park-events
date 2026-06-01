@@ -161,6 +161,17 @@ export default async (req, context) => {
           <!-- Events List (Centered) -->
           ${eventsHtml}
           
+          <!-- Footer -->
+          <tr>
+            <td align="center" style="padding: 30px 30px 20px; border-top: 1px solid #e0e0e0;">
+              <p style="margin: 0 0 4px; color: #999999; font-size: 13px; font-weight: bold;">Grant Park Events</p>
+              <p style="margin: 0 0 4px; color: #999999; font-size: 12px;">65 E Monroe St, Chicago</p>
+              <p style="margin: 0 0 12px; color: #999999; font-size: 12px;">United States of America</p>
+              <p style="margin: 0; color: #bbbbbb; font-size: 11px; font-style: italic;">You received this email because you signed up on the website or have attended a Grant Park event.</p>
+              <p style="margin: 8px 0 0; font-size: 11px;"><a href="{$unsubscribe}" style="color: #999999;">Unsubscribe</a></p>
+            </td>
+          </tr>
+          
         </table>
       </td>
     </tr>
