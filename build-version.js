@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.33.5';
-var BUILD_DATE = '2026-05-31';
-var BUILD_NOTES = 'TODAY/THIS WEEKEND jellybean: pill overlay replaced with thin strip below image';
+var BUILD_VERSION = 'v2.3.1-Build10.34';
+var BUILD_DATE = '2026-06-01';
+var BUILD_NOTES = 'Repo cleanup: removed 27 stale assets, migration functions, debug pages, historical docs';
