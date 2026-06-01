@@ -1914,6 +1914,28 @@
           let processedHtml = htmlData.html;
           processedHtml = processedHtml.replace(/https?:\/\/(www\.)?grantparkevents\.com\//g, '/');
           
+          // Build10.33.1: Convert logo via Canvas (bypasses fetch pipeline)
+          // Logo is a JPEG file with .png extension — MIME mismatch breaks FileReader conversion
+          try {
+            const logoImg = new Image();
+            logoImg.crossOrigin = 'anonymous';
+            logoImg.src = window.location.origin + '/assets/common/gpe-logo-email.png';
+            await new Promise((resolve, reject) => {
+              logoImg.onload = resolve;
+              logoImg.onerror = reject;
+              setTimeout(reject, 5000);
+            });
+            const logoCanvas = document.createElement('canvas');
+            logoCanvas.width = logoImg.naturalWidth;
+            logoCanvas.height = logoImg.naturalHeight;
+            logoCanvas.getContext('2d').drawImage(logoImg, 0, 0);
+            const logoDataUrl = logoCanvas.toDataURL('image/png');
+            processedHtml = processedHtml.replace(/src="[^"]*gpe-logo-email[^"]*"/g, 'src="' + logoDataUrl + '"');
+            console.log('[PNG] ✓ Logo converted via Canvas');
+          } catch (logoErr) {
+            console.warn('[PNG] Logo canvas conversion failed:', logoErr);
+          }
+          
           // Convert all remaining image URLs to base64 data URIs for html2canvas
           const imgRegex = /src="((?:\/|https?:\/\/)[^"]+\.(png|jpg|jpeg|gif|webp)[^"]*)"/gi;
           const imgMatches = [...processedHtml.matchAll(imgRegex)];

@@ -37,9 +37,11 @@ Date/time links now show end times when available, with intelligent AM/PM format
 
 **File:** `admin.html`
 
-The Export PNG function renders email HTML in a hidden iframe using `iframeDoc.write()`. This iframe's base URL is `about:blank`, so any images that fail base64 conversion have their relative URLs (e.g., `/assets/common/gpe-logo-email.png`) resolve against `about:blank` instead of the site — causing them to silently fail to load. The logo was consistently affected.
+The Export PNG function converts image URLs to base64 data URIs using `fetch()` + `FileReader`. This pipeline was silently failing for the logo because `gpe-logo-email.png` is actually a JPEG file with a `.png` extension (from Build10.27.4's Gmail dark mode fix). The MIME type mismatch caused the conversion to fail, and the fallback relative URL couldn't resolve in the hidden iframe (which has `about:blank` as its base URL).
 
-**Fix:** Inject a `<base href>` tag pointing to `window.location.origin` into the iframe HTML before rendering. This ensures relative URLs fall back to the correct origin if base64 conversion fails for any image.
+**Fix:** Two changes:
+1. **Canvas-based logo conversion** — before the general image loop, the logo is loaded via a native `Image` element, drawn to a `Canvas`, and converted to a data URL using `canvas.toDataURL()`. This bypasses the `fetch` + `FileReader` pipeline entirely and handles the JPEG/PNG mismatch gracefully.
+2. **`<base>` tag injection** — as a fallback for any other images that fail base64 conversion, a `<base href>` tag is injected into the iframe HTML so relative URLs resolve against the admin origin.
 
 ## Files Changed
 
