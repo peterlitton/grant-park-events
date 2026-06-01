@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.33.1';
+var BUILD_VERSION = 'v2.3.1-Build10.33.2';
 var BUILD_DATE = '2026-05-31';
-var BUILD_NOTES = 'Email template: This Weeks Events heading, size/color updates, smart time ranges, PNG logo fix';
+var BUILD_NOTES = 'Email template updates, PNG export: div replaces iframe for reliable image rendering';

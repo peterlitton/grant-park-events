@@ -111,7 +111,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.33.1';
+    var BUILD_VERSION = 'v2.3.1-Build10.33.2';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -1914,54 +1914,6 @@
           let processedHtml = htmlData.html;
           processedHtml = processedHtml.replace(/https?:\/\/(www\.)?grantparkevents\.com\//g, '/');
           
-          // Build10.33.1: Convert logo via Canvas (bypasses fetch pipeline)
-          // Logo is a JPEG file with .png extension — MIME mismatch breaks FileReader conversion
-          try {
-            const logoImg = new Image();
-            logoImg.crossOrigin = 'anonymous';
-            logoImg.src = window.location.origin + '/assets/common/gpe-logo-email.png';
-            await new Promise((resolve, reject) => {
-              logoImg.onload = resolve;
-              logoImg.onerror = reject;
-              setTimeout(reject, 5000);
-            });
-            const logoCanvas = document.createElement('canvas');
-            logoCanvas.width = logoImg.naturalWidth;
-            logoCanvas.height = logoImg.naturalHeight;
-            logoCanvas.getContext('2d').drawImage(logoImg, 0, 0);
-            const logoDataUrl = logoCanvas.toDataURL('image/png');
-            processedHtml = processedHtml.replace(/src="[^"]*gpe-logo-email[^"]*"/g, 'src="' + logoDataUrl + '"');
-            console.log('[PNG] ✓ Logo converted via Canvas');
-          } catch (logoErr) {
-            console.warn('[PNG] Logo canvas conversion failed:', logoErr);
-          }
-          
-          // Convert all remaining image URLs to base64 data URIs for html2canvas
-          const imgRegex = /src="((?:\/|https?:\/\/)[^"]+\.(png|jpg|jpeg|gif|webp)[^"]*)"/gi;
-          const imgMatches = [...processedHtml.matchAll(imgRegex)];
-          
-          for (const match of imgMatches) {
-            const imgUrl = match[1];
-            // Make relative URLs absolute for fetch
-            const fetchUrl = imgUrl.startsWith('/') ? window.location.origin + imgUrl : imgUrl;
-            try {
-              console.log('[PNG] Converting to base64:', fetchUrl);
-              const imgResponse = await fetch(fetchUrl);
-              if (imgResponse.ok) {
-                const blob = await imgResponse.blob();
-                const dataUrl = await new Promise((resolve) => {
-                  const reader = new FileReader();
-                  reader.onloadend = () => resolve(reader.result);
-                  reader.readAsDataURL(blob);
-                });
-                processedHtml = processedHtml.replace(imgUrl, dataUrl);
-                console.log('[PNG] ✓ Converted:', fetchUrl.split('/').pop());
-              }
-            } catch (imgErr) {
-              console.warn('[PNG] Could not convert image:', fetchUrl, imgErr);
-            }
-          }
-          
           // Generate filename
           const startDate = new Date(campaign.startDate);
           const monthName = startDate.toLocaleString('en-US', { month: 'long' }).toLowerCase();
@@ -1969,51 +1921,31 @@
           const year = startDate.getFullYear();
           const filename = `grant-park-events-week-of-${monthName}-${day}-${year}.png`;
           
-          // Create a hidden iframe to render the HTML
-          const iframe = document.createElement('iframe');
-          iframe.style.cssText = 'position:fixed;left:-9999px;top:0;width:600px;border:none;';
-          document.body.appendChild(iframe);
-          
-          // Build10.33: Inject <base> tag so relative URLs resolve against admin origin
-          // Fallback in case base64 conversion fails for any image
-          const baseTag = `<base href="${window.location.origin}/">`;
-          const renderHtml = processedHtml.replace('<head>', '<head>' + baseTag);
-          
-          // Write HTML to iframe
-          const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-          iframeDoc.open();
-          iframeDoc.write(renderHtml);
-          iframeDoc.close();
+          // Build10.33.1: Render in a hidden div instead of iframe
+          // Images load naturally from same origin — no base64 conversion needed
+          const container = document.createElement('div');
+          container.style.cssText = 'position:fixed;left:-9999px;top:0;width:600px;background:#fff;font-family:Arial,sans-serif;';
+          const bodyMatch = processedHtml.match(/<body[^>]*>([\s\S]*)<\/body>/i);
+          container.innerHTML = bodyMatch ? bodyMatch[1] : processedHtml;
+          document.body.appendChild(container);
           
           // Wait for images to load
           await new Promise(resolve => {
-            const images = iframeDoc.images;
-            if (images.length === 0) {
-              resolve();
-              return;
-            }
+            const images = container.querySelectorAll('img');
+            if (images.length === 0) { resolve(); return; }
             let loaded = 0;
-            const checkDone = () => {
-              loaded++;
-              if (loaded >= images.length) resolve();
-            };
-            Array.from(images).forEach(img => {
-              if (img.complete) {
-                checkDone();
-              } else {
-                img.onload = checkDone;
-                img.onerror = checkDone;
-              }
+            const checkDone = () => { if (++loaded >= images.length) resolve(); };
+            images.forEach(img => {
+              if (img.complete) checkDone();
+              else { img.onload = checkDone; img.onerror = checkDone; }
             });
-            // Timeout after 5 seconds
             setTimeout(resolve, 5000);
           });
           
-          // Additional delay to ensure rendering complete (BUILD73 fix)
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 500));
           
-          // Use html2canvas to capture
-          const canvas = await html2canvas(iframeDoc.body, {
+          // Capture with html2canvas
+          const canvas = await html2canvas(container, {
             scale: 2,
             useCORS: true,
             allowTaint: true,
@@ -2022,8 +1954,7 @@
             windowWidth: 600
           });
           
-          // Remove iframe
-          document.body.removeChild(iframe);
+          document.body.removeChild(container);
           
           // Download PNG
           const link = document.createElement('a');

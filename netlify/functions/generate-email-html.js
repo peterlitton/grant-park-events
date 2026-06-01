@@ -57,7 +57,7 @@ export default async (req, context) => {
       eventsHtml += `
         <tr>
           <td align="center" style="padding: 10px 30px ${bottomPadding};">
-            <h2 style="color: #d32f2f; font-size: 22px; margin: 0 0 2px; font-weight: bold;">${title}</h2>
+            <h2 style="color: #d32f2f; font-size: 26px; margin: 0 0 2px; font-weight: bold;">${title}</h2>
             <div style="margin: 0;">
       `;
       
@@ -80,7 +80,7 @@ export default async (req, context) => {
         const eventUrl = `https://www.grantparkevents.com/events/${evt.urlSlug}`;
         
         eventsHtml += `
-              <a href="${eventUrl}" style="display: block; margin: 3px 0; color: #1976d2; text-decoration: none; font-size: 16px;">
+              <a href="${eventUrl}" style="display: block; margin: 3px 0; color: #1976d2; text-decoration: none; font-size: 18px;">
                 ${timeDisplay}
               </a>
         `;
