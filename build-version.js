@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.34.1';
+var BUILD_VERSION = 'v2.3.1-Build10.34.2';
 var BUILD_DATE = '2026-06-01';
-var BUILD_NOTES = 'Fix empty Featuring/Program sections rendering on event pages';
+var BUILD_NOTES = 'Signup page: removed What Youll Get section, added top spacing';
