@@ -163,7 +163,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.34';
+    var BUILD_VERSION = 'v2.3.1-Build10.34.1';
     var BUILD_DATE = '2026-03-07';
   </script>
   
@@ -198,6 +198,9 @@
       if(/<(p|div|ul|ol|br|h[1-6])\b/i.test(html))return html;
       return renderFormatted(html);
     };
+
+    // Build10.34: Check if HTML field has actual visible text (not just residual tags like <br>)
+    const hasContent=(html)=>html&&html.replace(/<[^>]*>/g,'').replace(/&nbsp;/g,'').trim().length>0;
 
     // Build80: Calendar preview hover delay configuration
     // Allows mouse travel from event bar to preview window without disappearing
@@ -1359,11 +1362,11 @@
         // Build description with Featuring and Program
         let description = ev.description || '';
         
-        if (ev.featuring) {
+        if (hasContent(ev.featuring)) {
           description += (description ? '\n\n' : '') + 'Featuring:\n' + ev.featuring;
         }
         
-        if (ev.program) {
+        if (hasContent(ev.program)) {
           description += (description ? '\n\n' : '') + 'Program:\n' + ev.program;
         }
         
@@ -1641,14 +1644,14 @@
                   e('h3',{className:'font-bold text-lg mb-2'},'About This Event'),
                   e('div',{className:'text-gray-700',dangerouslySetInnerHTML:{__html:renderFormatted(ev.description)}})
                 ):null,
-                ev.featuring?e('div',{className:'mb-6'},
+                hasContent(ev.featuring)?e('div',{className:'mb-6'},
                   e('h3',{className:'font-bold text-lg mb-2 flex items-center gap-2'},
                     e('span',null,'✨'),
                     'Featuring'
                   ),
                   e('div',{className:'event-content text-gray-700',dangerouslySetInnerHTML:{__html:renderHTMLField(ev.featuring)}})
                 ):null,
-                ev.program?e('div',{className:'mb-6'},
+                hasContent(ev.program)?e('div',{className:'mb-6'},
                   e('h3',{className:'font-bold text-lg mb-2 flex items-center gap-2'},
                     e('span',null,'🎵'),
                     'Program'
@@ -2284,7 +2287,7 @@
                 e('h3',{className:'font-bold mb-2'},'About This Event'),
                 e('div',{className:'text-gray-700',dangerouslySetInnerHTML:{__html:renderFormatted(selectedEvent.description)}})
               ):null,
-              selectedEvent.featuring?
+              hasContent(selectedEvent.featuring)?
               e('div',{className:'mb-6'},
                 e('h3',{className:'font-bold mb-2 flex items-center gap-2'},
                   e('span',null,'✨'),
@@ -2292,7 +2295,7 @@
                 ),
                 e('div',{className:'event-content text-gray-700',dangerouslySetInnerHTML:{__html:renderHTMLField(selectedEvent.featuring)}})
               ):null,
-              selectedEvent.program?
+              hasContent(selectedEvent.program)?
               e('div',{className:'mb-6'},
                 e('h3',{className:'font-bold mb-2 flex items-center gap-2'},
                   e('span',null,'🎵'),
