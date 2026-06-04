@@ -23,7 +23,7 @@ export default async (req, context) => {
     }
 
     // Fetch sent campaigns from MailerLite
-    const response = await fetch('https://connect.mailerlite.com/api/campaigns?filter[status]=sent&limit=20&sort=-finished_at', {
+    const response = await fetch('https://connect.mailerlite.com/api/campaigns?filter[status]=sent', {
       headers: {
         'Authorization': `Bearer ${MAILERLITE_API_KEY}`,
         'Content-Type': 'application/json',

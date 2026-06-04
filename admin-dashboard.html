@@ -4,14 +4,15 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GPE Executive Dashboard</title>
+  <meta name="robots" content="noindex, nofollow">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.35.2';
-    var BUILD_DATE = '2026-06-03';
+    var BUILD_VERSION = 'v2.3.1-Build10.35.3';
+    var BUILD_DATE = '2026-06-04';
   </script>
   <style>
     body { font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
@@ -29,34 +30,63 @@
     .swipe-container { overflow: hidden; position: relative; }
     .swipe-track { display: flex; transition: transform 0.3s ease; }
     .swipe-page { min-width: 100%; flex-shrink: 0; }
-    .page-dot { width: 8px; height: 8px; border-radius: 50%; transition: all 0.2s; }
-    .page-dot.active { background: #2563eb; }
-    .page-dot.inactive { background: #d1d5db; }
-    .stat-card { background: #f9fafb; border-radius: 10px; padding: 14px; text-align: center; }
-    .stat-card .num { font-size: 22px; font-weight: 700; color: #111; }
+    .page-dot { width: 8px; height: 8px; border-radius: 50%; transition: all 0.2s; cursor: pointer; }
+    .stat-card { background: #f9fafb; border-radius: 10px; padding: 12px; text-align: center; }
+    .stat-card .num { font-size: 20px; font-weight: 700; color: #111; }
     .stat-card .label { font-size: 10px; color: #9ca3af; margin-top: 3px; }
     .stat-card .rate { font-size: 13px; color: #2563eb; font-weight: 600; margin-top: 2px; }
   </style>
 </head>
-<body class="bg-gray-100">
+<body class="bg-gray-100 min-h-screen">
 <div id="root"></div>
 <script>
-const e = React.createElement;
 const { useState, useEffect, useRef, useMemo } = React;
+const { createRoot } = ReactDOM;
+const e = React.createElement;
 
 const fmt = (n) => n != null ? n.toLocaleString() : '—';
-const fetchJSON = async (url) => { const r = await fetch(url); if (!r.ok) throw new Error(r.status); return r.json(); };
+const fetchJSON = async (url) => {
+  const r = await fetch(url);
+  if (!r.ok) { const t = await r.text(); throw new Error(t); }
+  return r.json();
+};
+const settle = async (url) => { try { return await fetchJSON(url); } catch(err) { console.warn('API error:', url, err.message); return null; } };
+
 const posBadge = (pos) => {
   const cls = pos <= 1.5 ? 'pos-1' : pos <= 3 ? 'pos-2-3' : pos <= 10 ? 'pos-4-10' : 'pos-10plus';
   return e('span', { className: `pos-badge ${cls}` }, pos.toFixed(1));
 };
+const pageName = (path) => {
+  if (!path || path === '/' || path === '/index.html') return 'Home';
+  if (path === '/signup') return 'Signup';
+  if (path === '/about') return 'About';
+  const m = path.match(/\/events\/\d{4}-\d{2}-\d{2}-(.+?)-\d+$/);
+  if (m) return m[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+  return path.length > 30 ? path.substring(0, 30) + '…' : path;
+};
+const fmtDate = (ds) => { if (!ds) return '—'; return new Date(ds).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); };
+
+// Card wrapper — no close indicator
+const Card = ({ title, subtitle, headerRight, children }) =>
+  e('div', { className: 'bg-white rounded-xl shadow-sm mb-3 overflow-hidden' },
+    e('div', { className: 'px-4 pt-3 pb-2 flex justify-between items-start' },
+      e('div', null, e('h2', { className: 'text-sm font-semibold text-gray-700' }, title), subtitle && e('div', { className: 'text-xs text-gray-400 mt-0.5' }, subtitle)),
+      headerRight),
+    e('div', { className: 'px-4 pb-4' }, children));
+
+// Table helpers
+const TH = (t) => e('th', { className: 'text-right text-gray-500 font-semibold pb-1 uppercase text-[10px]' }, t);
+const THl = (t) => e('th', { className: 'text-left text-gray-500 font-semibold pb-1 uppercase text-[10px]' }, t);
+const TD = (v) => e('td', { className: 'py-1.5 text-right tabular-nums text-gray-700 text-xs' }, v);
+const TDl = (v, c) => e('td', { className: 'py-1.5 text-gray-700 text-xs max-w-[180px] truncate ' + (c||'') }, v);
 
 // Plotly line chart
 const TrafficChart = ({ data, loading }) => {
   const ref = useRef(null);
   useEffect(() => {
-    if (!ref.current || !data) return;
-    Plotly.newPlot(ref.current, [{ x: data.map(d => d.date), y: data.map(d => d.visitors), type: 'scatter', mode: 'lines+markers', line: { color: '#2563eb', width: 2 }, marker: { size: 5 } }],
+    if (!ref.current || !data || !data.length) return;
+    Plotly.newPlot(ref.current,
+      [{ x: data.map(d => d.date), y: data.map(d => d.visitors), type: 'scatter', mode: 'lines+markers', line: { color: '#2563eb', width: 2 }, marker: { size: 5 } }],
       { margin: { t: 10, r: 10, b: 30, l: 40 }, height: 140, font: { size: 11 }, xaxis: { tickangle: -45 }, yaxis: { gridcolor: '#f3f4f6' }, paper_bgcolor: 'transparent', plot_bgcolor: 'transparent' },
       { displayModeBar: false, responsive: true });
   }, [data]);
@@ -68,8 +98,9 @@ const TrafficChart = ({ data, loading }) => {
 const DonutChart = ({ title, data, loading }) => {
   const ref = useRef(null);
   useEffect(() => {
-    if (!ref.current || !data) return;
-    Plotly.newPlot(ref.current, [{ labels: data.map(d => d.label), values: data.map(d => d.value), type: 'pie', hole: 0.5, textposition: 'outside', textfont: { size: 10 }, marker: { colors: ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] } }],
+    if (!ref.current || !data || !data.length) return;
+    Plotly.newPlot(ref.current,
+      [{ labels: data.map(d => d.label), values: data.map(d => d.value), type: 'pie', hole: 0.5, textposition: 'outside', textfont: { size: 10 }, marker: { colors: ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] } }],
       { margin: { t: 25, r: 10, b: 10, l: 10 }, height: 160, showlegend: false, title: { text: title, font: { size: 12 } }, paper_bgcolor: 'transparent' },
       { displayModeBar: false, responsive: true });
   }, [data]);
@@ -77,17 +108,32 @@ const DonutChart = ({ title, data, loading }) => {
   return e('div', { ref });
 };
 
-const Card = ({ title, subtitle, headerRight, children }) =>
-  e('div', { className: 'bg-white rounded-xl shadow-sm mb-3 overflow-hidden' },
-    e('div', { className: 'px-4 pt-3 pb-2 flex justify-between items-start' },
-      e('div', null, e('h2', { className: 'text-sm font-semibold text-gray-700' }, title), subtitle && e('div', { className: 'text-xs text-gray-400 mt-0.5' }, subtitle)),
-      headerRight),
-    e('div', { className: 'px-4 pb-4' }, children));
+// Campaign trend chart
+const CampaignTrendChart = ({ campaigns }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !campaigns || campaigns.length < 2) return;
+    const sorted = [...campaigns].reverse();
+    const dates = sorted.map(c => fmtDate(c.sentAt));
+    Plotly.newPlot(ref.current, [
+      { x: dates, y: sorted.map(c => c.stats.opensCount), type: 'bar', name: 'Opens', marker: { color: 'rgba(37,99,235,0.25)' }, yaxis: 'y' },
+      { x: dates, y: sorted.map(c => c.stats.clicksCount), type: 'bar', name: 'Clicks', marker: { color: 'rgba(16,185,129,0.25)' }, yaxis: 'y' },
+      { x: dates, y: sorted.map(c => c.stats.openRate), type: 'scatter', mode: 'lines+markers', name: 'Open Rate %', line: { color: '#2563eb', width: 2.5 }, marker: { size: 6 }, yaxis: 'y2' },
+      { x: dates, y: sorted.map(c => c.stats.clickRate), type: 'scatter', mode: 'lines+markers', name: 'Click Rate %', line: { color: '#10b981', width: 2.5 }, marker: { size: 6 }, yaxis: 'y2' }
+    ], {
+      height: 220, margin: { t: 10, r: 45, b: 50, l: 45 }, font: { size: 10 }, barmode: 'group', bargap: 0.3,
+      legend: { orientation: 'h', y: -0.35, x: 0.5, xanchor: 'center', font: { size: 9 } },
+      xaxis: { tickangle: -30, tickfont: { size: 9 } },
+      yaxis: { title: { text: 'Count', font: { size: 10, color: '#6b7280' } }, gridcolor: '#f3f4f6', tickfont: { size: 9 } },
+      yaxis2: { title: { text: 'Rate %', font: { size: 10, color: '#6b7280' } }, overlaying: 'y', side: 'right', gridcolor: 'transparent', tickfont: { size: 9 }, ticksuffix: '%' },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent'
+    }, { displayModeBar: false, responsive: true });
+  }, [campaigns]);
+  if (!campaigns || campaigns.length < 2) return null;
+  return e('div', { ref });
+};
 
-const Pills = ({ options, active, onChange }) =>
-  e('div', { className: 'flex gap-1 mb-3' }, options.map(o =>
-    e('button', { key: o.value, onClick: () => onChange(o.value), className: `px-2.5 py-1 text-xs rounded-full font-semibold ${active === o.value ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500'}` }, o.label)));
-
+// Subscriber bar chart
 const SubBarChart = ({ data }) => {
   if (!data || !data.length) return null;
   const max = Math.max(...data.map(d => d.count), 1);
@@ -96,20 +142,6 @@ const SubBarChart = ({ data }) => {
       e('div', { className: 'bar-val' }, d.count > 0 ? d.count : ''),
       e('div', { className: 'bar-stick', style: { height: Math.max(2, (d.count / max) * 80) } }),
       e('div', { className: 'bar-date' }, d.label))));
-};
-
-const TH = (text) => e('th', { className: 'text-right text-gray-500 font-semibold pb-1 uppercase text-[10px]' }, text);
-const THl = (text) => e('th', { className: 'text-left text-gray-500 font-semibold pb-1 uppercase text-[10px]' }, text);
-const TD = (val) => e('td', { className: 'py-1.5 text-right tabular-nums text-gray-700' }, val);
-const TDl = (val, cls) => e('td', { className: 'py-1.5 text-gray-700 max-w-[180px] truncate ' + (cls||'') }, val);
-
-const pageName = (path) => {
-  if (!path || path === '/' || path === '/index.html') return 'Home';
-  if (path === '/signup') return 'Signup';
-  if (path === '/about') return 'About';
-  const match = path.match(/\/events\/\d{4}-\d{2}-\d{2}-(.+?)-\d+$/);
-  if (match) return match[1].replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-  return path.length > 30 ? path.substring(0, 30) + '…' : path;
 };
 
 // ======= MAIN DASHBOARD =======
@@ -130,7 +162,7 @@ const Dashboard = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [trafficDays, setTrafficDays] = useState(7);
 
-  // Swipe handling
+  // Swipe
   const touchRef = useRef({ startX: 0, startY: 0 });
   const handleTouchStart = (ev) => { touchRef.current = { startX: ev.touches[0].clientX, startY: ev.touches[0].clientY }; };
   const handleTouchEnd = (ev) => {
@@ -144,8 +176,7 @@ const Dashboard = () => {
 
   const loadAll = async () => {
     setRefreshing(true);
-    const settle = async (url) => { try { return await fetchJSON(url); } catch(e) { return null; } };
-    const [g, r, q, p, l, s, en, c] = await Promise.all([
+    const results = await Promise.all([
       settle('/.netlify/functions/gsc-search-analytics?metric=overview'),
       settle('/.netlify/functions/gsc-search-analytics?metric=top-positions'),
       settle('/.netlify/functions/gsc-search-analytics?metric=top-queries-impressions'),
@@ -153,234 +184,191 @@ const Dashboard = () => {
       settle('/.netlify/functions/ga4-analytics?metric=landing-pages'),
       settle('/.netlify/functions/get-subscriber-stats'),
       settle('/.netlify/functions/ga4-analytics?metric=engagement'),
-      settle('/.netlify/functions/get-campaign-stats')
-    ]);
-    if (g) setGsc({ loading: false, data: g });
-    if (r) setRankings({ loading: false, data: r });
-    if (q) setQueries({ loading: false, data: q });
-    if (p) setTopPages({ loading: false, data: p });
-    if (l) setLandingPages({ loading: false, data: l });
-    if (s) setSubs({ loading: false, data: s });
-    if (en) setEngagement({ loading: false, data: en });
-    if (c) setCampaigns({ loading: false, data: c });
-    const [t, sr, d] = await Promise.all([
+      settle('/.netlify/functions/get-campaign-stats'),
       settle('/.netlify/functions/ga4-analytics?metric=daily-traffic&days=' + trafficDays),
       settle('/.netlify/functions/ga4-analytics?metric=traffic-sources'),
       settle('/.netlify/functions/ga4-analytics?metric=platform')
     ]);
-    if (t) setTraffic({ loading: false, data: t });
-    if (sr) setSources({ loading: false, data: sr });
-    if (d) setDevices({ loading: false, data: d });
+    if (results[0]) setGsc({ loading: false, data: results[0] });
+    if (results[1]) setRankings({ loading: false, data: results[1] });
+    if (results[2]) setQueries({ loading: false, data: results[2] });
+    if (results[3]) setTopPages({ loading: false, data: results[3] });
+    if (results[4]) setLandingPages({ loading: false, data: results[4] });
+    if (results[5]) setSubs({ loading: false, data: results[5] });
+    if (results[6]) setEngagement({ loading: false, data: results[6] });
+    if (results[7]) setCampaigns({ loading: false, data: results[7] });
+    if (results[8]) setTraffic({ loading: false, data: results[8] });
+    if (results[9]) setSources({ loading: false, data: results[9] });
+    if (results[10]) setDevices({ loading: false, data: results[10] });
     setLastRefresh(new Date());
     setRefreshing(false);
   };
 
   useEffect(() => { loadAll(); }, []);
 
+  // Subscriber 30-day chart data
   const subChartData = useMemo(() => {
     if (!subs.data || !subs.data.recent) return [];
     const now = new Date();
-    const days = [];
-    for (let i = 29; i >= 0; i--) {
-      const d = new Date(now - i * 86400000);
+    return Array.from({ length: 30 }, (_, i) => {
+      const d = new Date(now - (29 - i) * 86400000);
       const ds = d.toISOString().split('T')[0];
-      const count = subs.data.recent.filter(s => s.dateAdded && s.dateAdded.startsWith(ds)).length;
-      days.push({ label: d.getDate(), count });
-    }
-    return days;
+      return { label: d.getDate(), count: subs.data.recent.filter(s => s.dateAdded && s.dateAdded.startsWith(ds)).length };
+    });
   }, [subs.data]);
-
-  const subTotal = subs.data ? subs.data.total : 0;
+  const subTotal = subs.data ? (subs.data.total || 0) : 0;
   const sub30 = subChartData.reduce((s, d) => s + d.count, 0);
 
-  const fmtDate = (ds) => {
-    if (!ds) return '—';
-    const d = new Date(ds);
-    return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-  };
+  // ===== PAGE 1: ANALYTICS =====
+  const analyticsPage = e('div', { className: 'swipe-page' }, e('div', { className: 'max-w-lg mx-auto px-4' },
 
-  // ===== PAGE 1: ANALYTICS DASHBOARD =====
-  const analyticsPage = e('div', { className: 'swipe-page' },
-    e('div', { className: 'max-w-lg mx-auto p-3' },
+    // Combined Search Performance
+    Card({ title: 'Search Performance', subtitle: 'Last 7 days',
+      headerRight: !gsc.loading && gsc.data ? e('div', { className: 'text-right' },
+        e('div', { className: 'text-lg font-bold' }, fmt(gsc.data.totalImpressions), e('span', { className: 'text-xs font-normal text-gray-400 ml-1' }, 'impr')),
+        e('div', { className: 'text-sm font-semibold text-blue-600' }, fmt(gsc.data.totalClicks), e('span', { className: 'text-xs font-normal text-gray-400 ml-1' }, 'clicks · ', (gsc.data.avgCtr || 0), ' CTR%'))
+      ) : null,
+      children: gsc.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
+        gsc.data && gsc.data.daily ? e('table', { className: 'w-full' },
+          e('thead', null, e('tr', null, THl('Date'), TH('Impr'), TH('Clicks'), TH('CTR%'))),
+          e('tbody', null,
+            gsc.data.daily.map((d, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
+              TDl(new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
+              TD(fmt(d.impressions)), TD(fmt(d.clicks)), TD(d.ctr.toFixed(2)))),
+            e('tr', { className: 'border-t-2 border-gray-200 font-bold text-xs' },
+              e('td', { className: 'py-1.5' }, 'Total'), TD(fmt(gsc.data.totalImpressions)), TD(fmt(gsc.data.totalClicks)), TD((gsc.data.avgCtr || 0).toFixed(2)))))
+        : e('div', { className: 'text-xs text-gray-400' }, 'No data available')}),
 
-      // Search Performance
-      Card({ title: 'Search Performance', subtitle: 'Last 7 days',
-        headerRight: !gsc.loading && gsc.data && e('div', { className: 'text-right' },
-          e('div', { className: 'text-lg font-bold text-gray-900' }, fmt(gsc.data.totalImpressions), e('span', { className: 'text-xs font-normal text-gray-400 ml-1' }, 'impr')),
-          e('div', { className: 'text-sm font-semibold text-blue-600' }, fmt(gsc.data.totalClicks), e('span', { className: 'text-xs font-normal text-gray-400 ml-1' }, 'clicks · ' + (gsc.data.avgCtr||0) + ' CTR%'))),
-        children: gsc.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
-          gsc.data && gsc.data.daily && e('table', { className: 'w-full text-xs' },
-            e('thead', null, e('tr', null, THl('Date'), TH('Impr'), TH('Clicks'), TH('CTR%'))),
-            e('tbody', null,
-              gsc.data.daily.map((d, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
-                TDl(new Date(d.date+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'})),
-                TD(fmt(d.impressions)), TD(fmt(d.clicks)), TD(d.ctr.toFixed(2)))),
-              e('tr', { className: 'border-t-2 border-gray-200 font-bold' },
-                e('td', { className: 'py-1.5' }, 'Total'), TD(fmt(gsc.data.totalImpressions)), TD(fmt(gsc.data.totalClicks)), TD((gsc.data.avgCtr||0).toFixed(2)))))}),
+    // Rankings
+    Card({ title: 'Google Rankings', subtitle: 'Top held positions · 28 days',
+      children: rankings.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
+        rankings.data && rankings.data.queries ? e('table', { className: 'w-full' },
+          e('thead', null, e('tr', null, THl('Query'), TH('Pos'), TH('Impr'), TH('Clicks'))),
+          e('tbody', null, rankings.data.queries.map((q, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
+            TDl(q.query), e('td', { className: 'py-1.5 text-right text-xs' }, posBadge(q.position)), TD(fmt(q.impressions)), TD(fmt(q.clicks))))))
+        : e('div', { className: 'text-xs text-gray-400' }, 'No data')}),
 
-      // Rankings
-      Card({ title: 'Google Rankings', subtitle: 'Top held positions · 28 days',
-        children: rankings.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
-          rankings.data && e('table', { className: 'w-full text-xs' },
-            e('thead', null, e('tr', null, THl('Query'), TH('Pos'), TH('Impr'), TH('Clicks'))),
-            e('tbody', null, rankings.data.queries.map((q, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
-              TDl(q.query), e('td', { className: 'py-1.5 text-right' }, posBadge(q.position)), TD(fmt(q.impressions)), TD(fmt(q.clicks))))))}),
+    // Top Queries
+    Card({ title: 'Top Search Queries', subtitle: 'By impressions · 7 days',
+      children: queries.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
+        queries.data && queries.data.queries ? e('table', { className: 'w-full' },
+          e('thead', null, e('tr', null, THl('Query'), TH('Impr'), TH('Clicks'), TH('CTR%'))),
+          e('tbody', null, queries.data.queries.map((q, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
+            TDl(q.query), TD(fmt(q.impressions)), TD(fmt(q.clicks)), TD(q.ctr.toFixed(2))))))
+        : e('div', { className: 'text-xs text-gray-400' }, 'No data')}),
 
-      // Top Queries
-      Card({ title: 'Top Search Queries', subtitle: 'By impressions · 7 days',
-        children: queries.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
-          queries.data && e('table', { className: 'w-full text-xs' },
-            e('thead', null, e('tr', null, THl('Query'), TH('Impr'), TH('Clicks'), TH('CTR%'))),
-            e('tbody', null, queries.data.queries.map((q, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
-              TDl(q.query), TD(fmt(q.impressions)), TD(fmt(q.clicks)), TD(q.ctr.toFixed(2))))))}),
+    // Top Pages (limited to 5)
+    Card({ title: 'Top Pages', subtitle: 'Last 24 hours',
+      children: topPages.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
+        topPages.data && topPages.data.pages ? e('table', { className: 'w-full' },
+          e('thead', null, e('tr', null, THl('Page'), TH('Views'))),
+          e('tbody', null, topPages.data.pages.slice(0, 5).map((p, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
+            TDl(pageName(p.path), 'text-blue-600'), TD(fmt(p.views))))))
+        : e('div', { className: 'text-xs text-gray-400' }, 'No data')}),
 
-      // Top Pages
-      Card({ title: 'Top Pages', subtitle: 'Last 24 hours',
-        children: topPages.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
-          topPages.data && e('table', { className: 'w-full text-xs' },
-            e('thead', null, e('tr', null, THl('Page'), TH('Views'))),
-            e('tbody', null, topPages.data.pages.slice(0, 5).map((p, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
-              TDl(pageName(p.path), 'text-blue-600'), TD(fmt(p.views))))))}),
+    // Landing Pages
+    Card({ title: 'Top Landing Pages', subtitle: 'First page visited · 7 days',
+      children: landingPages.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
+        landingPages.data && landingPages.data.pages ? (() => {
+          const pages = landingPages.data.pages.slice(0, 10);
+          const max = pages.length ? pages[0].sessions : 1;
+          return e('div', { className: 'space-y-2' }, pages.map((p, i) => e('div', { key: i, className: 'flex items-center gap-2 text-xs' },
+            e('div', { className: 'w-32 truncate text-gray-700 flex-shrink-0' }, pageName(p.path)),
+            e('div', { className: 'landing-track' }, e('div', { className: 'landing-fill', style: { width: (p.sessions / max * 100) + '%' } })),
+            e('div', { className: 'w-10 text-right text-gray-500 tabular-nums flex-shrink-0' }, fmt(p.sessions)))));
+        })() : e('div', { className: 'text-xs text-gray-400' }, 'No data')}),
 
-      // Landing Pages
-      Card({ title: 'Top Landing Pages', subtitle: 'First page visited · 7 days',
-        children: landingPages.loading ? e('div', { className: 'h-20 bg-gray-50 rounded animate-pulse' }) :
-          landingPages.data && (() => {
-            const pages = landingPages.data.pages.slice(0, 10);
-            const max = pages.length ? pages[0].sessions : 1;
-            return e('div', { className: 'space-y-2' }, pages.map((p, i) => e('div', { key: i, className: 'flex items-center gap-2 text-xs' },
-              e('div', { className: 'w-32 truncate text-gray-700 flex-shrink-0' }, pageName(p.path)),
-              e('div', { className: 'landing-track' }, e('div', { className: 'landing-fill', style: { width: (p.sessions / max * 100) + '%' } })),
-              e('div', { className: 'w-10 text-right text-gray-500 tabular-nums flex-shrink-0' }, fmt(p.sessions)))));
-          })()}),
+    // Subscribers
+    Card({ title: 'New Subscribers', subtitle: 'Last 30 days · ' + fmt(subTotal) + ' total',
+      headerRight: e('div', { className: 'text-lg font-bold' }, fmt(sub30)),
+      children: subs.loading ? e('div', { className: 'h-24 bg-gray-50 rounded animate-pulse' }) : e(SubBarChart, { data: subChartData })}),
 
-      // Subscribers
-      Card({ title: 'New Subscribers', subtitle: 'Last 30 days · ' + fmt(subTotal) + ' total',
-        headerRight: e('div', { className: 'text-lg font-bold text-gray-900' }, fmt(sub30)),
-        children: subs.loading ? e('div', { className: 'h-24 bg-gray-50 rounded animate-pulse' }) : e(SubBarChart, { data: subChartData })}),
+    // Site Traffic
+    Card({ title: 'Site Traffic', subtitle: 'Last ' + trafficDays + ' days',
+      children: [
+        e('div', { key: 'p', className: 'flex gap-1 mb-3' },
+          [7, 14, 30].map(d => e('button', { key: d, onClick: async () => {
+            setTrafficDays(d); setTraffic({ loading: true, data: null });
+            const r = await settle('/.netlify/functions/ga4-analytics?metric=daily-traffic&days=' + d);
+            if (r) setTraffic({ loading: false, data: r });
+          }, className: 'px-2.5 py-1 text-xs rounded-full font-semibold ' + (trafficDays === d ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-500') }, d + ' days'))),
+        e(TrafficChart, { key: 'c', data: traffic.data && traffic.data.days ? traffic.data.days : null, loading: traffic.loading })]}),
 
-      // Site Traffic
-      Card({ title: 'Site Traffic', subtitle: 'Last ' + trafficDays + ' days',
-        children: [
-          e(Pills, { key: 'p', options: [{ value: 7, label: '7 days' }, { value: 14, label: '14 days' }, { value: 30, label: '30 days' }], active: trafficDays,
-            onChange: async (days) => { setTrafficDays(days); setTraffic({ loading: true, data: null }); try { setTraffic({ loading: false, data: await fetchJSON('/.netlify/functions/ga4-analytics?metric=daily-traffic&days=' + days) }); } catch(e) {} } }),
-          e(TrafficChart, { key: 'c', data: traffic.data?.days, loading: traffic.loading })]}),
+    // Engagement
+    Card({ title: 'Event Engagement', subtitle: 'Last 7 days',
+      children: engagement.loading ? e('div', { className: 'h-16 bg-gray-50 rounded animate-pulse' }) :
+        e('div', { className: 'flex gap-3' },
+          e('div', { className: 'stat-card flex-1' }, e('div', { className: 'num' }, fmt(engagement.data ? engagement.data.addToCalendar : 0)), e('div', { className: 'label' }, 'Add to Calendar')),
+          e('div', { className: 'stat-card flex-1' }, e('div', { className: 'num' }, fmt(engagement.data ? engagement.data.shareEvent : 0)), e('div', { className: 'label' }, 'Shares')))}),
 
-      // Engagement
-      Card({ title: 'Event Engagement', subtitle: 'Last 7 days',
-        children: engagement.loading ? e('div', { className: 'h-16 bg-gray-50 rounded animate-pulse' }) :
-          e('div', { className: 'flex gap-3' },
-            e('div', { className: 'stat-card flex-1' }, e('div', { className: 'num' }, fmt(engagement.data?.addToCalendar || 0)), e('div', { className: 'label' }, 'Add to Calendar')),
-            e('div', { className: 'stat-card flex-1' }, e('div', { className: 'num' }, fmt(engagement.data?.shareEvent || 0)), e('div', { className: 'label' }, 'Shares')))}),
+    // Sources & Devices
+    Card({ title: 'Sources & Devices', subtitle: 'Last 3 days',
+      children: e('div', { className: 'flex gap-3' },
+        e('div', { className: 'flex-1' }, e(DonutChart, { title: 'Sources', data: sources.data && sources.data.sources ? sources.data.sources.map(s => ({ label: s.source, value: s.sessions })) : null, loading: sources.loading })),
+        e('div', { className: 'flex-1' }, e(DonutChart, { title: 'Devices', data: devices.data && devices.data.devices ? devices.data.devices.map(d => ({ label: d.device, value: d.sessions })) : null, loading: devices.loading })))})
+  ));
 
-      // Sources & Devices
-      Card({ title: 'Sources & Devices', subtitle: 'Last 3 days',
-        children: e('div', { className: 'flex gap-3' },
-          e('div', { className: 'flex-1' }, e(DonutChart, { title: 'Sources', data: sources.data?.sources?.map(s => ({ label: s.source, value: s.sessions })), loading: sources.loading })),
-          e('div', { className: 'flex-1' }, e(DonutChart, { title: 'Devices', data: devices.data?.devices?.map(d => ({ label: d.device, value: d.sessions })), loading: devices.loading })))})
-    )
-  );
+  // ===== PAGE 2: CAMPAIGNS =====
+  const campaignList = campaigns.data && campaigns.data.campaigns ? campaigns.data.campaigns : [];
+  const campaignPage = e('div', { className: 'swipe-page' }, e('div', { className: 'max-w-lg mx-auto px-4' },
+    e('h2', { className: 'text-lg font-bold text-gray-900 mb-3' }, 'Campaign Performance'),
 
-  // ===== PAGE 2: CAMPAIGN PERFORMANCE =====
-  // Campaign trend chart (Plotly dual Y axes)
-  const CampaignTrendChart = ({ campaigns }) => {
-    const ref = useRef(null);
-    useEffect(() => {
-      if (!ref.current || !campaigns || campaigns.length < 2) return;
-      const sorted = [...campaigns].reverse();
-      const dates = sorted.map(c => fmtDate(c.sentAt));
-      Plotly.newPlot(ref.current, [
-        { x: dates, y: sorted.map(c => c.stats.opensCount), type: 'bar', name: 'Opens', marker: { color: 'rgba(37,99,235,0.25)' }, yaxis: 'y' },
-        { x: dates, y: sorted.map(c => c.stats.clicksCount), type: 'bar', name: 'Clicks', marker: { color: 'rgba(16,185,129,0.25)' }, yaxis: 'y' },
-        { x: dates, y: sorted.map(c => c.stats.openRate), type: 'scatter', mode: 'lines+markers', name: 'Open Rate %', line: { color: '#2563eb', width: 2.5 }, marker: { size: 6 }, yaxis: 'y2' },
-        { x: dates, y: sorted.map(c => c.stats.clickRate), type: 'scatter', mode: 'lines+markers', name: 'Click Rate %', line: { color: '#10b981', width: 2.5 }, marker: { size: 6 }, yaxis: 'y2' }
-      ], {
-        height: 220, margin: { t: 10, r: 45, b: 50, l: 45 }, font: { size: 10 }, barmode: 'group', bargap: 0.3,
-        legend: { orientation: 'h', y: -0.35, x: 0.5, xanchor: 'center', font: { size: 9 } },
-        xaxis: { tickangle: -30, tickfont: { size: 9 } },
-        yaxis: { title: { text: 'Count', font: { size: 10, color: '#6b7280' } }, gridcolor: '#f3f4f6', tickfont: { size: 9 } },
-        yaxis2: { title: { text: 'Rate %', font: { size: 10, color: '#6b7280' } }, overlaying: 'y', side: 'right', gridcolor: 'transparent', tickfont: { size: 9 }, ticksuffix: '%' },
-        paper_bgcolor: 'transparent', plot_bgcolor: 'transparent'
-      }, { displayModeBar: false, responsive: true });
-    }, [campaigns]);
-    if (!campaigns || campaigns.length < 2) return null;
-    return e('div', { ref });
-  };
+    campaignList.length >= 2 ? Card({ title: 'Campaign Trends', subtitle: 'Opens & clicks (bars) · Rates (lines)',
+      children: e(CampaignTrendChart, { campaigns: campaignList }) }) : null,
 
-  const campaignPage = e('div', { className: 'swipe-page' },
-    e('div', { className: 'max-w-lg mx-auto p-3' },
-      e('h2', { className: 'text-lg font-bold text-gray-900 mb-3' }, 'Campaign Performance'),
-
-      // Trend chart
-      !campaigns.loading && campaigns.data && campaigns.data.campaigns && campaigns.data.campaigns.length >= 2 &&
-        Card({ title: 'Campaign Trends', subtitle: 'Opens & clicks (bars) · Rates (lines) · Dual Y axes',
-          children: e(CampaignTrendChart, { campaigns: campaigns.data.campaigns }) }),
-
-      campaigns.loading ? e('div', { className: 'space-y-3' },
-        e('div', { className: 'h-40 bg-white rounded-xl animate-pulse' }),
-        e('div', { className: 'h-40 bg-white rounded-xl animate-pulse' })
-      ) :
-      campaigns.data && campaigns.data.campaigns && campaigns.data.campaigns.length > 0 ?
-        campaigns.data.campaigns.map((c, i) =>
-          e('div', { key: i, className: 'bg-white rounded-xl shadow-sm mb-3 overflow-hidden' },
-            e('div', { className: 'px-4 pt-3 pb-2' },
-              e('h3', { className: 'text-sm font-semibold text-gray-800 truncate' }, c.subject || c.name),
-              e('div', { className: 'text-xs text-gray-400 mt-0.5' }, 'Sent ' + fmtDate(c.sentAt))
-            ),
-            e('div', { className: 'px-4 pb-4' },
-              // Main stats row
-              e('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
-                e('div', { className: 'stat-card' }, e('div', { className: 'num' }, fmt(c.stats.sent)), e('div', { className: 'label' }, 'Delivered')),
-                e('div', { className: 'stat-card' }, e('div', { className: 'num' }, fmt(c.stats.opensCount)), e('div', { className: 'rate' }, c.stats.openRate.toFixed(1) + '%'), e('div', { className: 'label' }, 'Opens')),
-                e('div', { className: 'stat-card' }, e('div', { className: 'num' }, fmt(c.stats.clicksCount)), e('div', { className: 'rate' }, c.stats.clickRate.toFixed(1) + '%'), e('div', { className: 'label' }, 'Clicks'))
-              ),
-              // Secondary stats
-              e('div', { className: 'flex gap-4 text-xs text-gray-500 justify-center' },
-                c.stats.unsubscribes > 0 && e('span', null, '⊖ ', c.stats.unsubscribes, ' unsub'),
-                c.stats.spam > 0 && e('span', { className: 'text-red-500' }, '⚠ ', c.stats.spam, ' spam'),
-                c.stats.hardBounces > 0 && e('span', null, '↩ ', c.stats.hardBounces, ' bounce'),
-                (c.stats.unsubscribes === 0 && c.stats.spam === 0 && c.stats.hardBounces === 0) && e('span', { className: 'text-green-600' }, '✓ Clean delivery')
-              )
-            )
-          )
-        )
-      : e('div', { className: 'bg-white rounded-xl shadow-sm p-8 text-center text-gray-400 text-sm' }, 'No sent campaigns found')
-    )
-  );
+    campaigns.loading ? e('div', { className: 'space-y-3' },
+      e('div', { className: 'h-40 bg-white rounded-xl animate-pulse' }),
+      e('div', { className: 'h-40 bg-white rounded-xl animate-pulse' }))
+    : campaignList.length > 0 ? campaignList.map((c, i) =>
+        e('div', { key: i, className: 'bg-white rounded-xl shadow-sm mb-3 overflow-hidden' },
+          e('div', { className: 'px-4 pt-3 pb-2' },
+            e('h3', { className: 'text-sm font-semibold text-gray-800 truncate' }, c.subject || c.name),
+            e('div', { className: 'text-xs text-gray-400 mt-0.5' }, 'Sent ' + fmtDate(c.sentAt))),
+          e('div', { className: 'px-4 pb-4' },
+            e('div', { className: 'grid grid-cols-3 gap-2 mb-3' },
+              e('div', { className: 'stat-card' }, e('div', { className: 'num' }, fmt(c.stats.sent)), e('div', { className: 'label' }, 'Delivered')),
+              e('div', { className: 'stat-card' }, e('div', { className: 'num' }, fmt(c.stats.opensCount)), e('div', { className: 'rate' }, (c.stats.openRate || 0).toFixed(1) + '%'), e('div', { className: 'label' }, 'Opens')),
+              e('div', { className: 'stat-card' }, e('div', { className: 'num' }, fmt(c.stats.clicksCount)), e('div', { className: 'rate' }, (c.stats.clickRate || 0).toFixed(1) + '%'), e('div', { className: 'label' }, 'Clicks'))),
+            e('div', { className: 'flex gap-4 text-xs text-gray-500 justify-center' },
+              c.stats.unsubscribes > 0 ? e('span', null, '⊖ ' + c.stats.unsubscribes + ' unsub') : null,
+              c.stats.spam > 0 ? e('span', { className: 'text-red-500' }, '⚠ ' + c.stats.spam + ' spam') : null,
+              c.stats.hardBounces > 0 ? e('span', null, '↩ ' + c.stats.hardBounces + ' bounce') : null,
+              (c.stats.unsubscribes === 0 && c.stats.spam === 0 && (c.stats.hardBounces || 0) === 0) ? e('span', { className: 'text-green-600' }, '✓ Clean delivery') : null))))
+    : e('div', { className: 'bg-white rounded-xl shadow-sm p-8 text-center text-gray-400 text-sm' }, 'No sent campaigns found')
+  ));
 
   return e('div', { onTouchStart: handleTouchStart, onTouchEnd: handleTouchEnd },
-    // Header
-    e('div', { className: 'max-w-lg mx-auto px-3' },
-      e('div', { className: 'flex justify-between items-center py-3' },
-        e('div', null,
-          e('h1', { className: 'text-lg font-bold text-gray-900' }, 'Executive Dashboard'),
-          lastRefresh && e('div', { className: 'text-xs text-gray-400' }, 'Updated ' + lastRefresh.toLocaleTimeString())),
-        e('button', { onClick: loadAll, className: 'text-2xl', disabled: refreshing }, refreshing ? '⏳' : '🔄')),
-      // Page dots + labels
-      e('div', { className: 'flex justify-center items-center gap-4 pb-3' },
+    // Header with logo and Admin button
+    e('div', { className: 'max-w-lg mx-auto px-4 py-6' },
+      e('div', { className: 'mb-6' },
+        e('img', { src: '/assets/common/gpe-logo.png', alt: 'Grant Park Events', className: 'w-full rounded-lg mb-4' }),
+        e('div', { className: 'flex items-center justify-between' },
+          e('div', null,
+            e('h1', { className: 'text-lg font-bold text-gray-900' }, 'Executive Dashboard'),
+            e('p', { className: 'text-xs text-gray-400' },
+              lastRefresh ? 'Updated ' + lastRefresh.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago' }) + ' CT' : 'Loading...')),
+          e('div', { className: 'flex items-center gap-2' },
+            e('a', { href: '/admin.html', className: 'px-3 py-2 bg-gray-200 text-gray-700 text-xs rounded-lg hover:bg-gray-300' }, 'Admin'),
+            e('button', { onClick: loadAll, disabled: refreshing, className: 'px-3 py-2 bg-blue-600 text-white text-xs rounded-lg hover:bg-blue-700 disabled:opacity-50' }, refreshing ? '...' : 'Refresh')))),
+      // Page nav dots + labels
+      e('div', { className: 'flex justify-center items-center gap-4 pb-1' },
         e('button', { onClick: () => setPage(0), className: 'flex items-center gap-1.5' },
-          e('div', { className: 'page-dot ' + (page === 0 ? 'active' : 'inactive') }),
+          e('div', { className: 'page-dot ' + (page === 0 ? 'bg-blue-600' : 'bg-gray-300') }),
           e('span', { className: 'text-xs ' + (page === 0 ? 'text-blue-600 font-semibold' : 'text-gray-400') }, 'Analytics')),
         e('button', { onClick: () => setPage(1), className: 'flex items-center gap-1.5' },
-          e('div', { className: 'page-dot ' + (page === 1 ? 'active' : 'inactive') }),
-          e('span', { className: 'text-xs ' + (page === 1 ? 'text-blue-600 font-semibold' : 'text-gray-400') }, 'Campaigns'))
-      )
-    ),
+          e('div', { className: 'page-dot ' + (page === 1 ? 'bg-blue-600' : 'bg-gray-300') }),
+          e('span', { className: 'text-xs ' + (page === 1 ? 'text-blue-600 font-semibold' : 'text-gray-400') }, 'Campaigns')))),
     // Swipeable pages
     e('div', { className: 'swipe-container' },
       e('div', { className: 'swipe-track', style: { transform: 'translateX(' + (page * -100) + '%)' } },
-        analyticsPage,
-        campaignPage
-      )
-    ),
+        analyticsPage, campaignPage)),
     // Footer
     e('div', { className: 'text-center py-4 text-[11px] text-gray-400' },
-      'Grant Park Events · ' + BUILD_VERSION, e('br'),
-      'GSC data has ~2 day lag · GA4 data may have ~24hr delay')
+      'Grant Park Events · ' + BUILD_VERSION, e('br'), 'GSC data has ~2 day lag · GA4 data may have ~24hr delay')
   );
 };
 
-ReactDOM.createRoot(document.getElementById('root')).render(e(Dashboard));
+createRoot(document.getElementById('root')).render(e(Dashboard));
 </script>
 </body>
 </html>
