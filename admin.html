@@ -2428,7 +2428,7 @@
       // Build10.5: No blocking loading screen - admin shows immediately
       // Events load quickly (priority), other tabs load in background
 
-      return React.createElement('div', { className: 'min-h-screen pb-20' },
+      return React.createElement('div', { className: 'min-h-screen flex flex-col pb-20' },
         // Header
         React.createElement('header', { className: 'bg-gradient-to-r from-red-600 to-red-700 text-white py-8 shadow-lg' },
           React.createElement('div', { className: 'max-w-6xl mx-auto px-4' },
@@ -5138,7 +5138,7 @@
           )
         ),
         // Footer
-        React.createElement('footer', { className: 'bg-blue-600 text-white py-6 mt-8' },
+        React.createElement('footer', { className: 'bg-blue-600 text-white py-6 mt-auto' },
           React.createElement('div', { className: 'max-w-6xl mx-auto px-4 text-center' },
             React.createElement('p', { className: 'text-gray-400 text-sm' }, '© 2026 GrantParkEvents.com'),
             React.createElement('p', { className: 'text-white text-xs mt-2', style: {opacity: 0.75} }, `Release: ${BUILD_VERSION}`)
