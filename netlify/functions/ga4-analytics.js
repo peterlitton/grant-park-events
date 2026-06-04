@@ -188,6 +188,57 @@ export default async (req, context) => {
         }))
       };
       
+    } else if (metric === 'landing-pages') {
+      // Build10.35: Top landing pages (first page visited)
+      const daysParam = parseInt(url.searchParams.get('days')) || 7;
+      const startDate = formatDate(new Date(now - daysParam * 86400000));
+      const data = await runReport(accessToken, {
+        dateRanges: [{ startDate, endDate: today }],
+        dimensions: [{ name: 'landingPagePlusQueryString' }],
+        metrics: [{ name: 'sessions' }],
+        orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+        limit: 10
+      });
+      
+      result = {
+        metric: 'landing-pages',
+        period: `last ${daysParam} days`,
+        pages: (data.rows || []).map(row => ({
+          path: row.dimensionValues[0].value,
+          sessions: parseInt(row.metricValues[0].value)
+        }))
+      };
+      
+    } else if (metric === 'engagement') {
+      // Build10.35: Add to Calendar + Share event counts
+      const daysParam = parseInt(url.searchParams.get('days')) || 7;
+      const startDate = formatDate(new Date(now - daysParam * 86400000));
+      const data = await runReport(accessToken, {
+        dateRanges: [{ startDate, endDate: today }],
+        dimensions: [{ name: 'eventName' }],
+        metrics: [{ name: 'eventCount' }],
+        dimensionFilter: {
+          orGroup: {
+            expressions: [
+              { filter: { fieldName: 'eventName', stringFilter: { value: 'add_to_calendar' } } },
+              { filter: { fieldName: 'eventName', stringFilter: { value: 'share_event' } } }
+            ]
+          }
+        }
+      });
+      
+      const events = {};
+      (data.rows || []).forEach(row => {
+        events[row.dimensionValues[0].value] = parseInt(row.metricValues[0].value);
+      });
+      
+      result = {
+        metric: 'engagement',
+        period: `last ${daysParam} days`,
+        addToCalendar: events['add_to_calendar'] || 0,
+        shareEvent: events['share_event'] || 0
+      };
+      
     } else {
       return new Response(JSON.stringify({ error: `Unknown metric: ${metric}. Use: top-pages, daily-traffic, traffic-sources, platform` }), {
         status: 400, headers: corsHeaders

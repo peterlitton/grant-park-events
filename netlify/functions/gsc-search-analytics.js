@@ -152,7 +152,7 @@ export default async (req, context) => {
       result = {
         metric: 'top-queries-impressions',
         period: 'last 7 days',
-        queries: rows.slice(0, 3).map(row => ({
+        queries: rows.slice(0, 10).map(row => ({
           query: row.keys[0],
           impressions: row.impressions,
           clicks: row.clicks,
@@ -162,12 +162,12 @@ export default async (req, context) => {
       };
       
     } else if (metric === 'top-queries-clicks') {
-      // Top 3 search terms by clicks
+      // Top 10 search terms by clicks
       const data = await searchAnalytics(accessToken, {
         startDate: daysAgo7,
         endDate: daysAgo3,
         dimensions: ['query'],
-        rowLimit: 3
+        rowLimit: 10
         // Default sort is by clicks descending
       });
       
@@ -184,12 +184,12 @@ export default async (req, context) => {
       };
       
     } else if (metric === 'top-positions') {
-      // Top 5 search terms by best (lowest) average position
+      // Top 10 search terms by best (lowest) average position
       const data = await searchAnalytics(accessToken, {
         startDate: daysAgo28,
         endDate: daysAgo3,
         dimensions: ['query'],
-        rowLimit: 25
+        rowLimit: 50
       });
       
       // Sort by position ascending (best rank first), filter to terms with some impressions
@@ -200,7 +200,7 @@ export default async (req, context) => {
       result = {
         metric: 'top-positions',
         period: 'last 28 days',
-        queries: rows.slice(0, 5).map(row => ({
+        queries: rows.slice(0, 10).map(row => ({
           query: row.keys[0],
           position: Math.round(row.position * 10) / 10,
           clicks: row.clicks,
