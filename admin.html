@@ -2428,7 +2428,7 @@
       // Build10.5: No blocking loading screen - admin shows immediately
       // Events load quickly (priority), other tabs load in background
 
-      return React.createElement('div', { className: 'min-h-screen flex flex-col pb-20' },
+      return React.createElement('div', { className: 'min-h-screen flex flex-col' },
         // Header
         React.createElement('header', { className: 'bg-gradient-to-r from-red-600 to-red-700 text-white py-8 shadow-lg' },
           React.createElement('div', { className: 'max-w-6xl mx-auto px-4' },
@@ -2547,7 +2547,7 @@
         ),
 
         // Content
-        React.createElement('div', { className: 'max-w-6xl mx-auto px-4 py-8' },
+        React.createElement('div', { className: 'max-w-6xl mx-auto px-4 py-8 flex-1' },
           activeTab === 'events' ? 
             // EVENTS TAB
             React.createElement('div', { className: 'space-y-6' },
