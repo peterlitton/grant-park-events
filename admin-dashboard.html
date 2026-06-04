@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.35.3';
+    var BUILD_VERSION = 'v2.3.1-Build10.35.4';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -223,7 +223,7 @@ const Dashboard = () => {
   const analyticsPage = e('div', { className: 'swipe-page' }, e('div', { className: 'max-w-lg mx-auto px-4' },
 
     // Combined Search Performance
-    Card({ title: 'Search Performance', subtitle: 'Last 7 days',
+    Card({ title: 'Search Performance', subtitle: 'GSC · ~2 day data lag',
       headerRight: !gsc.loading && gsc.data ? e('div', { className: 'text-right' },
         e('div', { className: 'text-lg font-bold' }, fmt(gsc.data.totalImpressions), e('span', { className: 'text-xs font-normal text-gray-400 ml-1' }, 'impr')),
         e('div', { className: 'text-sm font-semibold text-blue-600' }, fmt(gsc.data.totalClicks), e('span', { className: 'text-xs font-normal text-gray-400 ml-1' }, 'clicks · ', (gsc.data.avgCtr || 0), ' CTR%'))
@@ -232,7 +232,7 @@ const Dashboard = () => {
         gsc.data && gsc.data.daily ? e('table', { className: 'w-full' },
           e('thead', null, e('tr', null, THl('Date'), TH('Impr'), TH('Clicks'), TH('CTR%'))),
           e('tbody', null,
-            gsc.data.daily.map((d, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
+            gsc.data.daily.slice().reverse().map((d, i) => e('tr', { key: i, className: 'border-b border-gray-50' },
               TDl(new Date(d.date + 'T00:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric' })),
               TD(fmt(d.impressions)), TD(fmt(d.clicks)), TD(d.ctr.toFixed(2)))),
             e('tr', { className: 'border-t-2 border-gray-200 font-bold text-xs' },

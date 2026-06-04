@@ -37,23 +37,28 @@ export default async (req, context) => {
     }
 
     const data = await response.json();
-    const campaigns = (data.data || []).map(c => ({
-      id: c.id,
-      name: c.name,
-      subject: c.emails?.[0]?.subject || c.name,
-      sentAt: c.finished_at || c.scheduled_for,
-      stats: {
-        sent: c.stats?.sent || 0,
-        opensCount: c.stats?.opens_count || 0,
-        openRate: c.stats?.open_rate?.percentage || 0,
-        clicksCount: c.stats?.clicks_count || 0,
-        clickRate: c.stats?.click_rate?.percentage || 0,
-        unsubscribes: c.stats?.unsubscribes_count || 0,
-        spam: c.stats?.spam_count || 0,
-        hardBounces: c.stats?.hard_bounces_count || 0,
-        softBounces: c.stats?.soft_bounces_count || 0
-      }
-    }));
+    const campaigns = (data.data || []).map(c => {
+      const sent = c.stats?.sent || 0;
+      const opensCount = c.stats?.opens_count || 0;
+      const clicksCount = c.stats?.clicks_count || 0;
+      return {
+        id: c.id,
+        name: c.name,
+        subject: c.emails?.[0]?.subject || c.name,
+        sentAt: c.finished_at || c.scheduled_for,
+        stats: {
+          sent,
+          opensCount,
+          openRate: sent > 0 ? Math.round(opensCount / sent * 1000) / 10 : 0,
+          clicksCount,
+          clickRate: sent > 0 ? Math.round(clicksCount / sent * 1000) / 10 : 0,
+          unsubscribes: c.stats?.unsubscribes_count || 0,
+          spam: c.stats?.spam_count || 0,
+          hardBounces: c.stats?.hard_bounces_count || 0,
+          softBounces: c.stats?.soft_bounces_count || 0
+        }
+      };
+    });
 
     return new Response(JSON.stringify({ campaigns }), {
       status: 200, headers: corsHeaders
