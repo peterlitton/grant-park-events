@@ -10,7 +10,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.35';
+    var BUILD_VERSION = 'v2.3.1-Build10.35.1';
     var BUILD_DATE = '2026-06-03';
   </script>
   <style>
@@ -264,7 +264,7 @@ const Dashboard = () => {
         children: [
           e(Pills, { key: 'p', options: [{ value: 7, label: '7 days' }, { value: 14, label: '14 days' }, { value: 30, label: '30 days' }], active: trafficDays,
             onChange: async (days) => { setTrafficDays(days); setTraffic({ loading: true, data: null }); try { setTraffic({ loading: false, data: await fetchJSON('/.netlify/functions/ga4-analytics?metric=daily-traffic&days=' + days) }); } catch(e) {} } }),
-          e(TrafficChart, { key: 'c', data: traffic.data?.daily, loading: traffic.loading })]}),
+          e(TrafficChart, { key: 'c', data: traffic.data?.days, loading: traffic.loading })]}),
 
       // Engagement
       Card({ title: 'Event Engagement', subtitle: 'Last 7 days',
