@@ -70,6 +70,28 @@ async function runReport(accessToken, requestBody) {
   return response.json();
 }
 
+// Build10.37: Helper for GA4 Realtime API
+async function runRealtimeReport(accessToken, requestBody) {
+  const response = await fetch(
+    `https://analyticsdata.googleapis.com/v1beta/properties/${GA4_PROPERTY_ID}:runRealtimeReport`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${accessToken}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(requestBody)
+    }
+  );
+  
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`GA4 Realtime API error (${response.status}): ${errorText}`);
+  }
+  
+  return response.json();
+}
+
 // Helper: Format date as YYYY-MM-DD
 function formatDate(date) {
   return date.toISOString().split('T')[0];
@@ -237,6 +259,84 @@ export default async (req, context) => {
         period: `last ${daysParam} days`,
         addToCalendar: events['add_to_calendar'] || 0,
         shareEvent: events['share_event'] || 0
+      };
+      
+    } else if (metric === 'realtime') {
+      // Build10.37: Real-time active users and pages (last 30 min)
+      const [usersData, pagesData, devicesData] = await Promise.all([
+        runRealtimeReport(accessToken, {
+          metrics: [{ name: 'activeUsers' }]
+        }),
+        runRealtimeReport(accessToken, {
+          dimensions: [{ name: 'unifiedScreenName' }],
+          metrics: [{ name: 'activeUsers' }],
+          orderBys: [{ metric: { metricName: 'activeUsers' }, desc: true }],
+          limit: 5
+        }),
+        runRealtimeReport(accessToken, {
+          dimensions: [{ name: 'deviceCategory' }],
+          metrics: [{ name: 'activeUsers' }]
+        })
+      ]);
+      
+      const activeUsers = usersData.rows?.[0]?.metricValues?.[0]?.value ? parseInt(usersData.rows[0].metricValues[0].value) : 0;
+      const pages = (pagesData.rows || []).map(row => ({
+        page: row.dimensionValues[0].value,
+        activeUsers: parseInt(row.metricValues[0].value)
+      }));
+      const devices = {};
+      (devicesData.rows || []).forEach(row => {
+        devices[row.dimensionValues[0].value.toLowerCase()] = parseInt(row.metricValues[0].value);
+      });
+      
+      result = {
+        metric: 'realtime',
+        activeUsers,
+        pages,
+        devices: { mobile: devices.mobile || 0, desktop: devices.desktop || 0, tablet: devices.tablet || 0 }
+      };
+      
+    } else if (metric === 'today-traffic') {
+      // Build10.37: Today's traffic by hour
+      const data = await runReport(accessToken, {
+        dateRanges: [{ startDate: 'today', endDate: 'today' }],
+        dimensions: [{ name: 'dateHour' }],
+        metrics: [{ name: 'sessions' }],
+        orderBys: [{ dimension: { dimensionName: 'dateHour' } }]
+      });
+      
+      let totalToday = 0;
+      const hours = (data.rows || []).map(row => {
+        const sessions = parseInt(row.metricValues[0].value);
+        totalToday += sessions;
+        const hourStr = row.dimensionValues[0].value;
+        const hour = parseInt(hourStr.substring(8));
+        return { hour, sessions };
+      });
+      
+      result = {
+        metric: 'today-traffic',
+        date: formatDate(new Date()),
+        totalToday,
+        hours
+      };
+      
+    } else if (metric === 'today-pages') {
+      // Build10.37: Today's top pages
+      const data = await runReport(accessToken, {
+        dateRanges: [{ startDate: 'today', endDate: 'today' }],
+        dimensions: [{ name: 'pagePath' }],
+        metrics: [{ name: 'screenPageViews' }],
+        orderBys: [{ metric: { metricName: 'screenPageViews' }, desc: true }],
+        limit: 5
+      });
+      
+      result = {
+        metric: 'today-pages',
+        pages: (data.rows || []).map(row => ({
+          path: row.dimensionValues[0].value,
+          views: parseInt(row.metricValues[0].value)
+        }))
       };
       
     } else {
