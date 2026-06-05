@@ -111,7 +111,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.35.5';
+    var BUILD_VERSION = 'v2.3.1-Build10.35.6';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -5138,7 +5138,7 @@
           )
         ),
         // Footer
-        React.createElement('footer', { className: 'bg-blue-600 text-white py-6 mt-auto' },
+        React.createElement('footer', { className: 'bg-blue-600 text-white py-6 mt-auto', style: editingEvent || editingCampaign ? {display:'none'} : {} },
           React.createElement('div', { className: 'max-w-6xl mx-auto px-4 text-center' },
             React.createElement('p', { className: 'text-gray-400 text-sm' }, '© 2026 GrantParkEvents.com'),
             React.createElement('p', { className: 'text-white text-xs mt-2', style: {opacity: 0.75} }, `Release: ${BUILD_VERSION}`)
