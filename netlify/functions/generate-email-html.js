@@ -93,6 +93,19 @@ export default async (req, context) => {
       `;
     });
     
+    // Build10.35.5: Resolve heroImage to full URL regardless of stored format
+    // Handles: just filename ("blues1.jpg"), relative path ("/.netlify/..."), or full URL ("https://...")
+    let heroSrc = '';
+    if (campaign.heroImage) {
+      if (campaign.heroImage.startsWith('http')) {
+        heroSrc = campaign.heroImage;
+      } else if (campaign.heroImage.startsWith('/')) {
+        heroSrc = 'https://www.grantparkevents.com' + campaign.heroImage;
+      } else {
+        heroSrc = 'https://www.grantparkevents.com/.netlify/functions/images/' + campaign.heroImage;
+      }
+    }
+
     // Full HTML email template
     const html = `
 <!DOCTYPE html>
@@ -129,10 +142,10 @@ export default async (req, context) => {
           </tr>
           
           <!-- Hero Image (Build10.27: linked to homepage, conditional) -->
-          ${campaign.heroImage ? `<tr>
+          ${heroSrc ? `<tr>
             <td>
               <a href="https://www.grantparkevents.com" target="_blank" style="text-decoration: none;">
-                <img src="https://www.grantparkevents.com/.netlify/functions/images/${campaign.heroImage}" alt="" width="600" style="display: block; width: 100%; height: auto;">
+                <img src="${heroSrc}" alt="" width="600" style="display: block; width: 100%; height: auto;">
               </a>
             </td>
           </tr>` : ''}
