@@ -47,6 +47,10 @@
     [contenteditable="true"] a:hover {
       color: #1d4ed8;
     }
+    /* Build10.35: Hide footer on mobile — admin not designed for mobile */
+    @media (max-width: 768px) {
+      footer { display: none !important; }
+    }
   </style>
   
   <!--
@@ -111,7 +115,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.35.9';
+    var BUILD_VERSION = 'v2.3.1-Build10.36';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -2547,7 +2551,7 @@
         ),
 
         // Content
-        React.createElement('div', { className: 'max-w-6xl mx-auto px-4 py-8', style: {minHeight: '100vh'} },
+        React.createElement('div', { className: 'max-w-6xl mx-auto px-4 py-8' },
           activeTab === 'events' ? 
             // EVENTS TAB
             React.createElement('div', { className: 'space-y-6' },
@@ -4470,7 +4474,7 @@
       };
       
       return React.createElement('div', {
-        className: 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 overflow-y-auto'
+        className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto'
         // onClick removed - modal only closes via Cancel button or X button
       },
         React.createElement('div', {
@@ -4784,7 +4788,7 @@
       };
 
       return React.createElement('div', {
-        className: 'fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center p-4 z-50 overflow-y-auto'
+        className: 'fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 overflow-y-auto'
       },
         React.createElement('div', { 
           className: 'bg-white rounded-xl max-w-3xl w-full max-h-[90vh] overflow-y-auto',
