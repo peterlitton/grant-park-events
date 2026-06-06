@@ -143,3 +143,8 @@ Swipe handler updated to support `page < 2` / `page > 0` for 3-page navigation.
 
 ## Build10.37.4 — Force Horizontal Labels
 - Added `tickangle: 0` to prevent Plotly auto-rotating x-axis labels vertically
+
+## Build10.37.5 — Program Notes Label Change
+- Removed "(PDF)" from "View Program Notes (PDF)" → "View Program Notes" (index.html, 2 locations)
+- Admin field label: "Program PDF Link" → "Program Notes Link" (admin.html)
+- Text-only change, no code
