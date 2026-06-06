@@ -140,3 +140,6 @@ Swipe handler updated to support `page < 2` / `page > 0` for 3-page navigation.
 - Labels: 12, 1, 2...11, 12pm, 1, 2...11 — each bar has unique position
 - Hover tooltips show visit count
 - Increased top margin for text-above-bar visibility
+
+## Build10.37.4 — Force Horizontal Labels
+- Added `tickangle: 0` to prevent Plotly auto-rotating x-axis labels vertically
