@@ -132,3 +132,11 @@ Swipe handler updated to support `page < 2` / `page > 0` for 3-page navigation.
 - Only noon shows "12pm" suffix — all others just the number
 - Legend simplified to "Past" and "Now" only (removed "Upcoming")
 - Proper x-axis handling by Plotly (no manual label spacing)
+
+## Build10.37.3 — Hourly Chart X-Axis Fix
+- Fixed Plotly treating hour labels as numbers (showed 0, 5, 10 instead of hours)
+- Fixed duplicate labels causing PM bars to merge with AM bars
+- Uses integer x positions (0-23) with tickvals/ticktext for display labels
+- Labels: 12, 1, 2...11, 12pm, 1, 2...11 — each bar has unique position
+- Hover tooltips show visit count
+- Increased top margin for text-above-bar visibility

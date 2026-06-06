@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.37.2';
+    var BUILD_VERSION = 'v2.3.1-Build10.37.3';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -145,21 +145,19 @@ const HourlyTrafficChart = ({ hours }) => {
   useEffect(() => {
     if (!ref.current || !hours) return;
     const currentHour = new Date().getHours();
-    const hourLabels = ['12','1','2','3','4','5','6','7','8','9','10','11','12pm','1','2','3','4','5','6','7','8','9','10','11'];
-    const allHours = Array.from({ length: 24 }, (_, i) => {
-      const match = hours.find(h => h.hour === i);
-      return match ? match.sessions : 0;
-    });
-    const colors = allHours.map((_, i) => i < currentHour ? '#2563eb' : i === currentHour ? '#f59e0b' : '#e5e7eb');
-    const textVals = allHours.map((s, i) => i <= currentHour && s > 0 ? s : '');
+    const tickLabels = ['12','1','2','3','4','5','6','7','8','9','10','11','12pm','1','2','3','4','5','6','7','8','9','10','11'];
+    const xVals = Array.from({ length: 24 }, (_, i) => i);
+    const yVals = xVals.map(i => { const m = hours.find(h => h.hour === i); return m ? m.sessions : 0; });
+    const colors = xVals.map(i => i < currentHour ? '#2563eb' : i === currentHour ? '#f59e0b' : '#e5e7eb');
+    const textVals = yVals.map((s, i) => i <= currentHour && s > 0 ? s : '');
     Plotly.newPlot(ref.current, [{
-      x: hourLabels, y: allHours, type: 'bar',
+      x: xVals, y: yVals, type: 'bar',
       marker: { color: colors }, text: textVals, textposition: 'outside',
       textfont: { size: 9, color: '#374151' },
-      hovertemplate: '%{x}: %{y} visits<extra></extra>'
+      hovertemplate: '%{text} visits<extra></extra>'
     }], {
-      height: 200, margin: { t: 5, r: 5, b: 28, l: 28 },
-      xaxis: { tickfont: { size: 8, color: '#9ca3af' }, fixedrange: true, gridcolor: 'transparent' },
+      height: 200, margin: { t: 15, r: 5, b: 28, l: 28 },
+      xaxis: { tickvals: xVals, ticktext: tickLabels, tickfont: { size: 8, color: '#9ca3af' }, fixedrange: true, gridcolor: 'transparent' },
       yaxis: { tickfont: { size: 9, color: '#9ca3af' }, gridcolor: '#f3f4f6', fixedrange: true },
       paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', bargap: 0.15,
       annotations: [
