@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.37';
+var BUILD_VERSION = 'v2.3.1-Build10.37.2';
 var BUILD_DATE = '2026-06-01';
 var BUILD_NOTES = 'Dashboard redesign: card layout, combined search, landing pages, engagement, 30d subscriber chart';
