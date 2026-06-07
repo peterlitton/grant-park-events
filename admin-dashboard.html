@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.37.6';
+    var BUILD_VERSION = 'v2.3.1-Build10.37.7';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -156,7 +156,7 @@ const HourlyTrafficChart = ({ hours }) => {
       textfont: { size: 9, color: '#374151' },
       hovertemplate: '%{text} visits<extra></extra>'
     }], {
-      height: 200, margin: { t: 15, r: 5, b: 28, l: 28 },
+      height: 200, margin: { t: 25, r: 5, b: 28, l: 28 },
       xaxis: { tickvals: xVals, ticktext: tickLabels, tickangle: 0, tickfont: { size: 8, color: '#9ca3af' }, fixedrange: true, gridcolor: 'transparent' },
       yaxis: { tickfont: { size: 9, color: '#9ca3af' }, gridcolor: '#f3f4f6', fixedrange: true },
       paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', bargap: 0.15,
@@ -185,7 +185,7 @@ const QrTrafficChart = ({ days }) => {
       textfont: { size: 9, color: '#374151' },
       hovertemplate: '%{x}: %{y} page views<extra></extra>'
     }], {
-      height: 180, margin: { t: 15, r: 5, b: 30, l: 28 },
+      height: 180, margin: { t: 25, r: 5, b: 30, l: 28 },
       xaxis: { tickangle: -45, tickfont: { size: 8, color: '#9ca3af' }, fixedrange: true, gridcolor: 'transparent' },
       yaxis: { tickfont: { size: 9, color: '#9ca3af' }, gridcolor: '#f3f4f6', fixedrange: true },
       paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', bargap: 0.2

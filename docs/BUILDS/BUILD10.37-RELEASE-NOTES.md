@@ -166,3 +166,7 @@ Swipe handler updated to support `page < 2` / `page > 0` for 3-page navigation.
 - `netlify/functions/ga4-analytics.js` — new `qr-traffic` metric
 - `admin-dashboard.html` — QrTrafficChart component + campaigns page card + state + fetch
 - Version bump files
+
+## Build10.37.7 — Chart Top Margin Fix
+- Increased Plotly `margin.t` from 15 to 25 on HourlyTrafficChart and QrTrafficChart
+- Prevents value labels above tallest bars from being clipped
