@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.37.5';
+    var BUILD_VERSION = 'v2.3.1-Build10.37.6';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -169,6 +169,31 @@ const HourlyTrafficChart = ({ hours }) => {
   return e('div', { ref });
 };
 
+// Build10.37.6: QR traffic daily chart (Plotly)
+const QrTrafficChart = ({ days }) => {
+  const ref = useRef(null);
+  useEffect(() => {
+    if (!ref.current || !days || !days.length) return;
+    const dates = days.map(d => {
+      const s = d.date;
+      return (s.substring(4,6)) + '/' + (s.substring(6,8));
+    });
+    Plotly.newPlot(ref.current, [{
+      x: dates, y: days.map(d => d.views), type: 'bar',
+      marker: { color: '#2563eb' },
+      text: days.map(d => d.views > 0 ? d.views : ''), textposition: 'outside',
+      textfont: { size: 9, color: '#374151' },
+      hovertemplate: '%{x}: %{y} page views<extra></extra>'
+    }], {
+      height: 180, margin: { t: 15, r: 5, b: 30, l: 28 },
+      xaxis: { tickangle: -45, tickfont: { size: 8, color: '#9ca3af' }, fixedrange: true, gridcolor: 'transparent' },
+      yaxis: { tickfont: { size: 9, color: '#9ca3af' }, gridcolor: '#f3f4f6', fixedrange: true },
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', bargap: 0.2
+    }, { displayModeBar: false, responsive: true });
+  }, [days]);
+  return e('div', { ref });
+};
+
 // Subscriber bar chart (original)
 const SubBarChart = ({ data }) => {
   if (!data || !data.length) return null;
@@ -194,6 +219,7 @@ const Dashboard = () => {
   const [devices, setDevices] = useState({ loading: true, data: null });
   const [engagement, setEngagement] = useState({ loading: true, data: null });
   const [campaigns, setCampaigns] = useState({ loading: true, data: null });
+  const [qrTraffic, setQrTraffic] = useState({ loading: true, data: null });
   const [realtime, setRealtime] = useState({ loading: true, data: null });
   const [todayTraffic, setTodayTraffic] = useState({ loading: true, data: null });
   const [todayPages, setTodayPages] = useState({ loading: true, data: null });
@@ -229,7 +255,8 @@ const Dashboard = () => {
       settle('/.netlify/functions/ga4-analytics?metric=platform'),
       settle('/.netlify/functions/ga4-analytics?metric=realtime'),
       settle('/.netlify/functions/ga4-analytics?metric=today-traffic'),
-      settle('/.netlify/functions/ga4-analytics?metric=today-pages')
+      settle('/.netlify/functions/ga4-analytics?metric=today-pages'),
+      settle('/.netlify/functions/ga4-analytics?metric=qr-traffic')
     ]);
     if (results[0]) setGsc({ loading: false, data: results[0] });
     if (results[1]) setRankings({ loading: false, data: results[1] });
@@ -245,6 +272,7 @@ const Dashboard = () => {
     if (results[11]) setRealtime({ loading: false, data: results[11] });
     if (results[12]) setTodayTraffic({ loading: false, data: results[12] });
     if (results[13]) setTodayPages({ loading: false, data: results[13] });
+    if (results[14]) setQrTraffic({ loading: false, data: results[14] });
     setLastRefresh(new Date());
     setRefreshing(false);
   };
@@ -427,7 +455,19 @@ const Dashboard = () => {
               c.stats.spam > 0 ? e('span', { className: 'text-red-500' }, '⚠ ' + c.stats.spam + ' spam') : null,
               c.stats.hardBounces > 0 ? e('span', null, '↩ ' + c.stats.hardBounces + ' bounce') : null,
               (c.stats.unsubscribes === 0 && c.stats.spam === 0 && (c.stats.hardBounces || 0) === 0) ? e('span', { className: 'text-green-600' }, '✓ Clean delivery') : null))))
-    : e('div', { className: 'bg-white rounded-xl shadow-sm p-8 text-center text-gray-400 text-sm' }, 'No sent campaigns found')
+    : e('div', { className: 'bg-white rounded-xl shadow-sm p-8 text-center text-gray-400 text-sm' }, 'No sent campaigns found'),
+
+    // Build10.37.6: QR Code Traffic
+    Card({ title: 'Business Card QR Visits', subtitle: 'Page: /gpe-bcard-qr · last 30 days',
+      headerRight: !qrTraffic.loading && qrTraffic.data ? e('div', { className: 'text-right' },
+        e('div', { className: 'text-xl font-bold' }, fmt(qrTraffic.data.total)),
+        e('div', { className: 'text-[11px] text-gray-400' }, 'page views')
+      ) : null,
+      children: qrTraffic.loading ? e('div', { className: 'h-32 bg-gray-50 rounded animate-pulse' }) :
+        qrTraffic.data && qrTraffic.data.days && qrTraffic.data.days.length > 0 ?
+          e(QrTrafficChart, { days: qrTraffic.data.days })
+        : e('div', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No QR traffic data found')
+    })
   ));
 
   return e('div', { onTouchStart: handleTouchStart, onTouchEnd: handleTouchEnd },

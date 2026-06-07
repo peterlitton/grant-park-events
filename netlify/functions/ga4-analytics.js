@@ -339,6 +339,35 @@ export default async (req, context) => {
         }))
       };
       
+    } else if (metric === 'qr-traffic') {
+      // Build10.37.6: Daily page views for a specific page (e.g., business card QR landing page)
+      const pagePath = url.searchParams.get('page') || '/gpe-bcard-qr';
+      const daysParam = parseInt(url.searchParams.get('days')) || 30;
+      const startDate = formatDate(new Date(now - daysParam * 86400000));
+      const data = await runReport(accessToken, {
+        dateRanges: [{ startDate, endDate: today }],
+        dimensions: [{ name: 'date' }],
+        metrics: [{ name: 'screenPageViews' }],
+        dimensionFilter: {
+          filter: {
+            fieldName: 'pagePath',
+            stringFilter: { value: pagePath, matchType: 'CONTAINS' }
+          }
+        },
+        orderBys: [{ dimension: { dimensionName: 'date' } }]
+      });
+      
+      result = {
+        metric: 'qr-traffic',
+        page: pagePath,
+        period: `last ${daysParam} days`,
+        days: (data.rows || []).map(row => ({
+          date: row.dimensionValues[0].value,
+          views: parseInt(row.metricValues[0].value)
+        })),
+        total: (data.rows || []).reduce((sum, row) => sum + parseInt(row.metricValues[0].value), 0)
+      };
+      
     } else {
       return new Response(JSON.stringify({ error: `Unknown metric: ${metric}. Use: top-pages, daily-traffic, traffic-sources, platform` }), {
         status: 400, headers: corsHeaders

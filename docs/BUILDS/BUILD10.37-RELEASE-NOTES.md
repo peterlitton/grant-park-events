@@ -148,3 +148,21 @@ Swipe handler updated to support `page < 2` / `page > 0` for 3-page navigation.
 - Removed "(PDF)" from "View Program Notes (PDF)" → "View Program Notes" (index.html, 2 locations)
 - Admin field label: "Program PDF Link" → "Program Notes Link" (admin.html)
 - Text-only change, no code
+
+## Build10.37.6 — Business Card QR Traffic Chart
+
+**New GA4 metric:** `qr-traffic`
+- Queries `sessionSource` filtered to `gpe-bcard-qr` (configurable via `?source=` param)
+- Returns daily session counts for last 30 days (configurable via `?days=` param)
+- Response: `{ source, period, days: [{date, sessions}], total }`
+
+**Dashboard:** Added "Business Card QR Visits" card to campaigns page
+- Plotly bar chart showing daily visits from QR source
+- Total visit count in header
+- Positioned below MailerLite campaign cards
+- Shows "No QR traffic data found" if source has no data
+
+**Files changed:**
+- `netlify/functions/ga4-analytics.js` — new `qr-traffic` metric
+- `admin-dashboard.html` — QrTrafficChart component + campaigns page card + state + fetch
+- Version bump files
