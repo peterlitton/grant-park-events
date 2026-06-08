@@ -115,7 +115,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.37.9';
+    var BUILD_VERSION = 'v2.3.1-Build10.38';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -1919,6 +1919,8 @@
           processedHtml = processedHtml.replace(/https?:\/\/(www\.)?grantparkevents\.com\//g, '/');
           // Build10.33.2: Strip white backgrounds that html2canvas renders over images
           processedHtml = processedHtml.replace(/background-color:\s*#fff(fff)?;?/gi, '');
+          // Build10.38: Strip footer from PNG (address, disclaimer, unsubscribe)
+          processedHtml = processedHtml.replace(/<!-- Footer -->[\s\S]*?<\/tr>/i, '');
           // Generate filename
           const startDate = new Date(campaign.startDate);
           const monthName = startDate.toLocaleString('en-US', { month: 'long' }).toLowerCase();
