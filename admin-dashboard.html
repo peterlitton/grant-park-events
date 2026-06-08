@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.37.7';
+    var BUILD_VERSION = 'v2.3.1-Build10.37.9';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -154,16 +154,13 @@ const HourlyTrafficChart = ({ hours }) => {
       x: xVals, y: yVals, type: 'bar',
       marker: { color: colors }, text: textVals, textposition: 'outside',
       textfont: { size: 9, color: '#374151' },
+      cliponaxis: false,
       hovertemplate: '%{text} visits<extra></extra>'
     }], {
       height: 200, margin: { t: 25, r: 5, b: 28, l: 28 },
       xaxis: { tickvals: xVals, ticktext: tickLabels, tickangle: 0, tickfont: { size: 8, color: '#9ca3af' }, fixedrange: true, gridcolor: 'transparent' },
       yaxis: { tickfont: { size: 9, color: '#9ca3af' }, gridcolor: '#f3f4f6', fixedrange: true },
-      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', bargap: 0.15,
-      annotations: [
-        { x: 0.3, y: -0.16, xref: 'paper', yref: 'paper', text: '■ Past', showarrow: false, font: { size: 9, color: '#2563eb' } },
-        { x: 0.7, y: -0.16, xref: 'paper', yref: 'paper', text: '■ Now', showarrow: false, font: { size: 9, color: '#f59e0b' } }
-      ]
+      paper_bgcolor: 'transparent', plot_bgcolor: 'transparent', bargap: 0.15
     }, { displayModeBar: false, responsive: true });
   }, [hours]);
   return e('div', { ref });
@@ -183,6 +180,7 @@ const QrTrafficChart = ({ days }) => {
       marker: { color: '#2563eb' },
       text: days.map(d => d.views > 0 ? d.views : ''), textposition: 'outside',
       textfont: { size: 9, color: '#374151' },
+      cliponaxis: false,
       hovertemplate: '%{x}: %{y} page views<extra></extra>'
     }], {
       height: 180, margin: { t: 25, r: 5, b: 30, l: 28 },

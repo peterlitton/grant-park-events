@@ -170,3 +170,11 @@ Swipe handler updated to support `page < 2` / `page > 0` for 3-page navigation.
 ## Build10.37.7 — Chart Top Margin Fix
 - Increased Plotly `margin.t` from 15 to 25 on HourlyTrafficChart and QrTrafficChart
 - Prevents value labels above tallest bars from being clipped
+
+## Build10.37.8 — Chart Label Clipping Fix (Correct)
+- Added `cliponaxis: false` to HourlyTrafficChart and QrTrafficChart traces
+- Removes clipping behavior entirely — labels render regardless of bar height or margin
+- Replaces margin guessing approach from Build10.37.7
+
+## Build10.37.9 — Remove Chart Legend
+- Removed "Past" / "Now" annotation legend from hourly traffic chart
