@@ -9,12 +9,15 @@ function stripHtml(html) {
   if (!html) return '';
   return html
     .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<br\s*\/?>/gi, ' ')
-    .replace(/<div>/gi, ' ')
-    .replace(/<\/div>/gi, '')
+    .replace(/<br\s*\/?>/gi, ', ')
+    .replace(/<\/div>/gi, ', ')
+    .replace(/<div>/gi, '')
     .replace(/<[^>]+>/g, '')
     .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
+    .replace(/,\s*,/g, ',')
+    .replace(/,\s*$/g, '')
+    .replace(/^\s*,\s*/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -36,13 +39,14 @@ function formatDate(dateStr) {
 
 function getEventType(event) {
   const title = (event.title || '').toLowerCase();
-  if (title.includes('music') || title.includes('concert') || title.includes('symphony')) return 'ClassicalMusic';
+  if (title.includes('symphony') || title.includes('concert') || title.includes('orchestra')) return 'ClassicalMusic';
   if (title.includes('jazz')) return 'JazzMusic';
   if (title.includes('blues')) return 'BluesMusic';
   if (title.includes('movie') || title.includes('film')) return 'OutdoorMovies';
   if (title.includes('firework')) return 'Fireworks';
   if (title.includes('festival')) return 'ChicagoFestival';
   if (title.includes('dance')) return 'DancePerformance';
+  if (title.includes('music series')) return 'LiveMusic';
   return 'ChicagoEvents';
 }
 
@@ -60,9 +64,14 @@ function buildEventUrl(event) {
 }
 
 function buildImageUrl(event) {
-  if (!event.image) return null;
-  if (event.image.startsWith('http')) return event.image;
-  return `https://www.grantparkevents.com${event.image}`;
+  const img = event.image;
+  if (!img) return null;
+  // Match site's getAbsoluteImageUrl logic exactly
+  if (img.startsWith('http') || img.startsWith('data:')) return img;
+  if (img.startsWith('/')) return 'https://www.grantparkevents.com' + img;
+  // Bare filename — route to blob storage
+  if (!img.includes('/')) return 'https://www.grantparkevents.com/.netlify/functions/images/' + img;
+  return 'https://www.grantparkevents.com/' + img;
 }
 
 function generatePostText(event) {
