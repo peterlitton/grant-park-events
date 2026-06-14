@@ -1,23 +1,38 @@
-// Test Facebook Page posting via Meta Graph API
-// Temporary function — delete after validating
+// Test Meta Graph API — Temporary validation function
+// Pattern copied from get-campaign-stats.js (confirmed working)
 
-export default async (event, context) => {
-  const PAGE_ID = process.env.META_PAGE_ID;
-  const PAGE_TOKEN = process.env.META_PAGE_ACCESS_TOKEN;
+export default async (req, context) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, OPTIONS',
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-cache'
+  };
 
-  if (!PAGE_ID || !PAGE_TOKEN) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: 'Missing META_PAGE_ID or META_PAGE_ACCESS_TOKEN env vars' })
-    };
+  if (req.method === 'OPTIONS') {
+    return new Response('', { headers: corsHeaders });
   }
 
-  const action = (event.queryStringParameters || {}).action || 'test';
-
   try {
-    if (action === 'test') {
-      // Post a simple test message
-      const response = await fetch(`https://graph.facebook.com/v25.0/${PAGE_ID}/feed`, {
+    const PAGE_ID = Netlify.env.get('META_PAGE_ID');
+    const PAGE_TOKEN = Netlify.env.get('META_PAGE_ACCESS_TOKEN');
+
+    if (!PAGE_ID || !PAGE_TOKEN) {
+      return new Response(JSON.stringify({ error: 'Missing env vars', hasPageId: !!PAGE_ID, hasToken: !!PAGE_TOKEN }), {
+        status: 500, headers: corsHeaders
+      });
+    }
+
+    const url = new URL(req.url);
+    const action = url.searchParams.get('action') || 'verify';
+
+    if (action === 'verify') {
+      const resp = await fetch('https://graph.facebook.com/v25.0/' + PAGE_ID + '?fields=name,id,fan_count&access_token=' + PAGE_TOKEN);
+      const data = await resp.json();
+      return new Response(JSON.stringify(data), { headers: corsHeaders });
+
+    } else if (action === 'test') {
+      const resp = await fetch('https://graph.facebook.com/v25.0/' + PAGE_ID + '/feed', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -25,54 +40,35 @@ export default async (event, context) => {
           access_token: PAGE_TOKEN
         })
       });
-
-      const data = await response.json();
-
-      if (data.error) {
-        return {
-          statusCode: 400,
-          body: JSON.stringify({ success: false, error: data.error })
-        };
-      }
-
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ success: true, post_id: data.id, message: 'Test post published. Delete it from your page when done.' })
-      };
+      const data = await resp.json();
+      return new Response(JSON.stringify(data), { headers: corsHeaders });
 
     } else if (action === 'delete') {
-      // Delete a post by ID
-      const postId = (event.queryStringParameters || {}).post_id;
+      const postId = url.searchParams.get('post_id');
       if (!postId) {
-        return { statusCode: 400, body: JSON.stringify({ error: 'post_id required' }) };
+        return new Response(JSON.stringify({ error: 'post_id param required' }), {
+          status: 400, headers: corsHeaders
+        });
       }
-
-      const response = await fetch(`https://graph.facebook.com/v25.0/${postId}`, {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ access_token: PAGE_TOKEN })
+      const resp = await fetch('https://graph.facebook.com/v25.0/' + postId + '?access_token=' + PAGE_TOKEN, {
+        method: 'DELETE'
       });
+      const data = await resp.json();
+      return new Response(JSON.stringify(data), { headers: corsHeaders });
 
-      const data = await response.json();
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ success: data.success, deleted: postId })
-      };
-
-    } else if (action === 'verify') {
-      // Just verify credentials without posting
-      const response = await fetch(`https://graph.facebook.com/v25.0/${PAGE_ID}?fields=name,id,fan_count&access_token=${PAGE_TOKEN}`);
-      const data = await response.json();
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ success: !data.error, page: data })
-      };
+    } else if (action === 'token-info') {
+      const resp = await fetch('https://graph.facebook.com/v25.0/debug_token?input_token=' + PAGE_TOKEN + '&access_token=' + PAGE_TOKEN);
+      const data = await resp.json();
+      return new Response(JSON.stringify(data), { headers: corsHeaders });
     }
 
+    return new Response(JSON.stringify({ error: 'Use ?action=verify, test, delete, or token-info' }), {
+      status: 400, headers: corsHeaders
+    });
+
   } catch (err) {
-    return {
-      statusCode: 500,
-      body: JSON.stringify({ error: err.message })
-    };
+    return new Response(JSON.stringify({ error: err.message }), {
+      status: 500, headers: corsHeaders
+    });
   }
 };
