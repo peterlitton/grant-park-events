@@ -303,21 +303,38 @@ export default async (req, context) => {
                 const containerData = await containerResp.json();
 
                 if (containerData.id) {
-                  // Step 2: Publish container
-                  const publishResp = await fetch(`https://graph.facebook.com/v25.0/${IG_USER_ID}/media_publish`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      creation_id: containerData.id,
-                      access_token: PAGE_TOKEN
-                    })
-                  });
-                  const publishData = await publishResp.json();
-                  if (publishData.id) {
-                    trackingEntry.igPostId = publishData.id;
-                    igResult = { success: true, igPostId: publishData.id };
+                  // Wait for container to be ready (check status, retry up to 5 times)
+                  let containerReady = false;
+                  for (let attempt = 0; attempt < 5; attempt++) {
+                    await new Promise(r => setTimeout(r, 2000)); // wait 2 seconds
+                    const statusResp = await fetch(`https://graph.facebook.com/v25.0/${containerData.id}?fields=status_code&access_token=${PAGE_TOKEN}`);
+                    const statusData = await statusResp.json();
+                    if (statusData.status_code === 'FINISHED') {
+                      containerReady = true;
+                      break;
+                    }
+                    if (statusData.status_code === 'ERROR') break;
+                  }
+
+                  if (containerReady) {
+                    // Step 2: Publish container
+                    const publishResp = await fetch(`https://graph.facebook.com/v25.0/${IG_USER_ID}/media_publish`, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        creation_id: containerData.id,
+                        access_token: PAGE_TOKEN
+                      })
+                    });
+                    const publishData = await publishResp.json();
+                    if (publishData.id) {
+                      trackingEntry.igPostId = publishData.id;
+                      igResult = { success: true, igPostId: publishData.id };
+                    } else {
+                      igResult = { success: false, error: publishData.error };
+                    }
                   } else {
-                    igResult = { success: false, error: publishData.error };
+                    igResult = { success: false, error: 'Container not ready after retries' };
                   }
                 } else {
                   igResult = { success: false, error: containerData.error };
