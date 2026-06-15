@@ -129,7 +129,7 @@ export default async (req, context) => {
                 <tr>
                   <td align="left" valign="middle" width="50%" style="background-color: #ffffff;">
                     <a href="https://www.grantparkevents.com" target="_blank" style="text-decoration: none; background-color: #ffffff;">
-                      <img src="https://www.grantparkevents.com/assets/common/gpe-logo-email.png" alt="Grant Park Events" width="266" style="display: block;">
+                      <img src="https://www.grantparkevents.com/assets/common/gpe-logo-email.png" alt="" width="266" style="display: block;">
                     </a>
                   </td>
                   <td align="right" valign="middle" width="50%">
