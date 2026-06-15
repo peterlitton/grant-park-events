@@ -108,6 +108,33 @@ function generatePostText(event) {
   return lines.join('\n');
 }
 
+function generateInstagramCaption(event) {
+  const date = formatDate(event.date);
+  const location = event.venue || event.location || 'Grant Park';
+  const time = event.time || '';
+  const hashtags = generateHashtags(event);
+
+  const desc = stripHtml(event.description);
+  const shortDesc = desc.length > 150 ? desc.substring(0, 147) + '...' : desc;
+
+  const featuring = stripHtml(event.featuring);
+  const featLine = featuring ? `🎤 Featuring: ${featuring.length > 100 ? featuring.substring(0, 97) + '...' : featuring}` : '';
+
+  const lines = [
+    `🎵 ${event.title}`,
+    `📅 ${date}${time ? ` at ${time}` : ''}`,
+    `📍 ${location}`,
+    '',
+    shortDesc,
+  ];
+
+  if (featLine) lines.push('', featLine);
+
+  lines.push('', '🎟️ Free admission · Link in bio', '', hashtags);
+
+  return lines.join('\n');
+}
+
 function getFutureEvents(events, days) {
   const now = new Date();
   const cutoff = new Date(now);
@@ -185,6 +212,7 @@ export default async (req, context) => {
       // AC 2.3, 2.5: Publish to Facebook
       const PAGE_ID = Netlify.env.get('META_PAGE_ID');
       const PAGE_TOKEN = Netlify.env.get('META_PAGE_ACCESS_TOKEN');
+      const IG_USER_ID = Netlify.env.get('META_IG_USER_ID');
 
       if (!PAGE_ID || !PAGE_TOKEN) {
         return new Response(JSON.stringify({ error: 'Missing META_PAGE_ID or META_PAGE_ACCESS_TOKEN' }), {
@@ -198,6 +226,11 @@ export default async (req, context) => {
         if (!event) {
           return new Response(JSON.stringify({ error: 'Event not found: ' + eventId }), {
             status: 404, headers: corsHeaders
+          });
+        }
+        if (posted[String(event.id)] && url.searchParams.get('force') !== 'true') {
+          return new Response(JSON.stringify({ action: 'publish-one', published: 0, message: 'Already posted', postId: posted[String(event.id)].postId }), {
+            headers: corsHeaders
           });
         }
         eventsToPost = [event];
@@ -245,13 +278,57 @@ export default async (req, context) => {
           data = await resp.json();
 
           if (data.id || data.post_id) {
-            // Track successful post
-            posted[String(event.id)] = {
-              postId: data.id || data.post_id,
+            // Track successful Facebook post
+            const trackingEntry = {
+              fbPostId: data.id || data.post_id,
               postedAt: new Date().toISOString(),
               type: imageUrl ? 'photo' : 'text'
             };
-            results.push({ eventId: event.id, title: event.title, success: true, postId: data.id || data.post_id });
+
+            // Instagram: 2-step container publish
+            let igResult = null;
+            if (IG_USER_ID && imageUrl) {
+              try {
+                const igCaption = generateInstagramCaption(event);
+                // Step 1: Create container
+                const containerResp = await fetch(`https://graph.facebook.com/v25.0/${IG_USER_ID}/media`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    image_url: imageUrl,
+                    caption: igCaption,
+                    access_token: PAGE_TOKEN
+                  })
+                });
+                const containerData = await containerResp.json();
+
+                if (containerData.id) {
+                  // Step 2: Publish container
+                  const publishResp = await fetch(`https://graph.facebook.com/v25.0/${IG_USER_ID}/media_publish`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      creation_id: containerData.id,
+                      access_token: PAGE_TOKEN
+                    })
+                  });
+                  const publishData = await publishResp.json();
+                  if (publishData.id) {
+                    trackingEntry.igPostId = publishData.id;
+                    igResult = { success: true, igPostId: publishData.id };
+                  } else {
+                    igResult = { success: false, error: publishData.error };
+                  }
+                } else {
+                  igResult = { success: false, error: containerData.error };
+                }
+              } catch (igErr) {
+                igResult = { success: false, error: igErr.message };
+              }
+            }
+
+            posted[String(event.id)] = trackingEntry;
+            results.push({ eventId: event.id, title: event.title, success: true, fbPostId: data.id || data.post_id, instagram: igResult });
           } else {
             results.push({ eventId: event.id, title: event.title, success: false, error: data.error });
           }
