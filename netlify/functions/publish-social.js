@@ -1,164 +1,21 @@
-// Publish Social — Automated Facebook Page posting from GPE event data
-// Uses verified Netlify Functions v2 pattern (from get-campaign-stats.js)
-// Actions: preview (dry-run), publish (post to FB), publish-one (single event)
+// Publish Social — HTTP function for manual social media operations
+// Actions: preview, publish, publish-one, tracking, reset-tracking, verify, token-info
+// Imports shared logic from utils/social-utils.js
 
-import { getStore } from "@netlify/blobs";
+import {
+  getFutureEvents, readEvents, readTracking, saveTracking,
+  buildImageUrl, buildEventUrl, generateFBPostText,
+  publishToFacebook, publishToInstagram
+} from './utils/social-utils.js';
 
-// Strip HTML tags and fragments from event content
-function stripHtml(html) {
-  if (!html) return '';
-  return html
-    .replace(/<!--[\s\S]*?-->/g, '')
-    .replace(/<\/b>\s*<b>/gi, ', ')
-    .replace(/<br\s*\/?>/gi, ', ')
-    .replace(/<\/div>/gi, ', ')
-    .replace(/<div>/gi, ', ')
-    .replace(/<\/p>/gi, ', ')
-    .replace(/<p[^>]*>/gi, ', ')
-    .replace(/<\/li>/gi, ', ')
-    .replace(/<li>/gi, '')
-    .replace(/<[^>]+>/g, '')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
-    .replace(/,\s*,/g, ',')
-    .replace(/,\s*,/g, ',')
-    .replace(/,\s*$/g, '')
-    .replace(/^\s*,\s*/g, '')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
-
-function parseLocalDate(dateStr) {
-  if (!dateStr) return null;
-  const [y, m, d] = dateStr.split('-').map(Number);
-  return new Date(y, m - 1, d);
-}
-
-function formatDate(dateStr) {
-  const date = parseLocalDate(dateStr);
-  if (!date) return '';
-  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const months = ['January', 'February', 'March', 'April', 'May', 'June',
-                  'July', 'August', 'September', 'October', 'November', 'December'];
-  return `${days[date.getDay()]}, ${months[date.getMonth()]} ${date.getDate()}`;
-}
-
-function getEventType(event) {
-  const title = (event.title || '').toLowerCase();
-  if (title.includes('symphony') || title.includes('concert') || title.includes('orchestra')) return 'ClassicalMusic';
-  if (title.includes('jazz')) return 'JazzMusic';
-  if (title.includes('blues')) return 'BluesMusic';
-  if (title.includes('movie') || title.includes('film')) return 'OutdoorMovies';
-  if (title.includes('firework')) return 'Fireworks';
-  if (title.includes('festival')) return 'ChicagoFestival';
-  if (title.includes('dance')) return 'DancePerformance';
-  if (title.includes('music series')) return 'LiveMusic';
-  return 'ChicagoEvents';
-}
-
-function generateHashtags(event) {
-  const tags = ['#GrantPark', '#ChicagoEvents', '#FreeEvents'];
-  if (event.venue && event.venue.includes('Millennium')) tags.push('#MillenniumPark');
-  tags.push(`#${getEventType(event)}`);
-  tags.push('#Chicago', '#DowntownChicago');
-  return tags.join(' ');
-}
-
-function buildEventUrl(event) {
-  const slug = event.urlSlug || `${event.date}-${event.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')}-${event.id}`;
-  return `https://www.grantparkevents.com/events/${slug}?utm_source=facebook&utm_medium=social`;
-}
-
-function buildImageUrl(event) {
-  const img = event.image;
-  if (!img) return null;
-  // Match site's getAbsoluteImageUrl logic exactly
-  if (img.startsWith('http') || img.startsWith('data:')) return img;
-  if (img.startsWith('/')) return 'https://www.grantparkevents.com' + img;
-  // Bare filename — route to blob storage
-  if (!img.includes('/')) return 'https://www.grantparkevents.com/.netlify/functions/images/' + img;
-  return 'https://www.grantparkevents.com/' + img;
-}
-
-function generatePostText(event) {
-  const date = formatDate(event.date);
-  const location = event.venue || event.location || 'Grant Park';
-  const time = event.time || '';
-  const url = buildEventUrl(event);
-  const hashtags = generateHashtags(event);
-
-  const desc = stripHtml(event.description);
-  const shortDesc = desc.length > 150 ? desc.substring(0, 147) + '...' : desc;
-
-  const featuring = stripHtml(event.featuring);
-  const featLine = featuring ? `🎤 Featuring: ${featuring.length > 100 ? featuring.substring(0, 97) + '...' : featuring}` : '';
-
-  const lines = [
-    `🎵 ${event.title}`,
-    `📅 ${date}${time ? ` at ${time}` : ''}`,
-    `📍 ${location}`,
-    '',
-    shortDesc,
-  ];
-
-  if (featLine) lines.push('', featLine);
-
-  lines.push('', '🎟️ Free admission', url, '', hashtags);
-
-  return lines.join('\n');
-}
-
-function generateInstagramCaption(event) {
-  const date = formatDate(event.date);
-  const location = event.venue || event.location || 'Grant Park';
-  const time = event.time || '';
-  const hashtags = generateHashtags(event);
-
-  const desc = stripHtml(event.description);
-  const shortDesc = desc.length > 150 ? desc.substring(0, 147) + '...' : desc;
-
-  const featuring = stripHtml(event.featuring);
-  const featLine = featuring ? `🎤 Featuring: ${featuring.length > 100 ? featuring.substring(0, 97) + '...' : featuring}` : '';
-
-  const lines = [
-    `🎵 ${event.title}`,
-    `📅 ${date}${time ? ` at ${time}` : ''}`,
-    `📍 ${location}`,
-    '',
-    shortDesc,
-  ];
-
-  if (featLine) lines.push('', featLine);
-
-  lines.push('', '🎟️ Free admission · Link in bio', '', hashtags);
-
-  return lines.join('\n');
-}
-
-function getFutureEvents(events, days) {
-  const now = new Date();
-  const cutoff = new Date(now);
-  cutoff.setDate(cutoff.getDate() + days);
-
-  return events
-    .filter(event => {
-      if (event.published === false) return false;
-      if (!event.date) return false;
-      const eventDate = parseLocalDate(event.date);
-      if (!eventDate) return false;
-      return eventDate >= now && eventDate <= cutoff;
-    })
-    .sort((a, b) => parseLocalDate(a.date) - parseLocalDate(b.date));
-}
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'GET, OPTIONS',
+  'Content-Type': 'application/json',
+  'Cache-Control': 'no-cache'
+};
 
 export default async (req, context) => {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, OPTIONS',
-    'Content-Type': 'application/json',
-    'Cache-Control': 'no-cache'
-  };
-
   if (req.method === 'OPTIONS') {
     return new Response('', { headers: corsHeaders });
   }
@@ -169,26 +26,32 @@ export default async (req, context) => {
     const days = parseInt(url.searchParams.get('days')) || 14;
     const eventId = url.searchParams.get('id');
 
-    // Read events from Blobs
-    const store = getStore("events");
-    const eventsData = await store.get("grantParkEvents", { type: "json" });
+    // Verify and token-info don't need event data
+    if (action === 'verify') {
+      const PAGE_ID = Netlify.env.get('META_PAGE_ID');
+      const PAGE_TOKEN = Netlify.env.get('META_PAGE_ACCESS_TOKEN');
+      if (!PAGE_ID || !PAGE_TOKEN) {
+        return new Response(JSON.stringify({ error: 'Missing env vars', hasPageId: !!PAGE_ID, hasToken: !!PAGE_TOKEN }), { status: 500, headers: corsHeaders });
+      }
+      const resp = await fetch('https://graph.facebook.com/v25.0/' + PAGE_ID + '?fields=name,id,fan_count,instagram_business_account&access_token=' + PAGE_TOKEN);
+      return new Response(JSON.stringify(await resp.json()), { headers: corsHeaders });
+    }
 
+    if (action === 'token-info') {
+      const PAGE_TOKEN = Netlify.env.get('META_PAGE_ACCESS_TOKEN');
+      if (!PAGE_TOKEN) return new Response(JSON.stringify({ error: 'No token' }), { status: 500, headers: corsHeaders });
+      const resp = await fetch('https://graph.facebook.com/v25.0/debug_token?input_token=' + PAGE_TOKEN + '&access_token=' + PAGE_TOKEN);
+      return new Response(JSON.stringify(await resp.json()), { headers: corsHeaders });
+    }
+
+    // Read events and tracking
+    const eventsData = await readEvents();
     if (!eventsData || !Array.isArray(eventsData)) {
       return new Response(JSON.stringify({ error: 'No events found in store' }), { headers: corsHeaders });
     }
-
-    // Read tracking data (which events have been posted)
-    const trackingStore = getStore("social-tracking");
-    let posted = {};
-    try {
-      const trackingData = await trackingStore.get("posted-events", { type: "json" });
-      if (trackingData) posted = trackingData;
-    } catch (e) {
-      posted = {};
-    }
+    const posted = await readTracking();
 
     if (action === 'preview') {
-      // AC 2.1, 2.2, 2.8: Dry run — generate posts without publishing
       const futureEvents = getFutureEvents(eventsData, days);
       const posts = futureEvents.map(event => ({
         eventId: event.id,
@@ -196,7 +59,7 @@ export default async (req, context) => {
         eventDate: event.date,
         alreadyPosted: !!posted[String(event.id)],
         imageUrl: buildImageUrl(event),
-        postText: generatePostText(event),
+        postText: generateFBPostText(event),
         eventUrl: buildEventUrl(event)
       }));
 
@@ -209,153 +72,60 @@ export default async (req, context) => {
       }), { headers: corsHeaders });
 
     } else if (action === 'publish' || action === 'publish-one') {
-      // AC 2.3, 2.5: Publish to Facebook
       const PAGE_ID = Netlify.env.get('META_PAGE_ID');
       const PAGE_TOKEN = Netlify.env.get('META_PAGE_ACCESS_TOKEN');
       const IG_USER_ID = Netlify.env.get('META_IG_USER_ID');
 
       if (!PAGE_ID || !PAGE_TOKEN) {
-        return new Response(JSON.stringify({ error: 'Missing META_PAGE_ID or META_PAGE_ACCESS_TOKEN' }), {
-          status: 500, headers: corsHeaders
-        });
+        return new Response(JSON.stringify({ error: 'Missing META_PAGE_ID or META_PAGE_ACCESS_TOKEN' }), { status: 500, headers: corsHeaders });
       }
 
       let eventsToPost;
       if (action === 'publish-one' && eventId) {
         const event = eventsData.find(e => String(e.id) === String(eventId));
         if (!event) {
-          return new Response(JSON.stringify({ error: 'Event not found: ' + eventId }), {
-            status: 404, headers: corsHeaders
-          });
-        }
-        if (posted[String(event.id)] && url.searchParams.get('force') !== 'true') {
-          return new Response(JSON.stringify({ action: 'publish-one', published: 0, message: 'Already posted', postId: posted[String(event.id)].postId }), {
-            headers: corsHeaders
-          });
+          return new Response(JSON.stringify({ error: 'Event not found: ' + eventId }), { status: 404, headers: corsHeaders });
         }
         eventsToPost = [event];
       } else {
-        eventsToPost = getFutureEvents(eventsData, days)
-          .filter(e => !posted[String(e.id)]);
+        eventsToPost = getFutureEvents(eventsData, days).filter(e => !posted[String(e.id)]);
       }
 
       if (eventsToPost.length === 0) {
-        return new Response(JSON.stringify({ action: 'publish', published: 0, message: 'No new events to post' }), {
-          headers: corsHeaders
-        });
+        return new Response(JSON.stringify({ action: 'publish', published: 0, message: 'No new events to post' }), { headers: corsHeaders });
       }
 
       const results = [];
       for (const event of eventsToPost) {
-        const postText = generatePostText(event);
-        const imageUrl = buildImageUrl(event);
+        const trackingEntry = { postedAt: new Date().toISOString() };
 
-        let resp, data;
+        // Facebook
         try {
-          if (imageUrl) {
-            // Photo post with caption
-            resp = await fetch(`https://graph.facebook.com/v25.0/${PAGE_ID}/photos`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                url: imageUrl,
-                caption: postText,
-                access_token: PAGE_TOKEN
-              })
-            });
-          } else {
-            // Text-only post (no image)
-            resp = await fetch(`https://graph.facebook.com/v25.0/${PAGE_ID}/feed`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                message: postText,
-                access_token: PAGE_TOKEN
-              })
-            });
+          const fbResult = await publishToFacebook(event, PAGE_ID, PAGE_TOKEN);
+          if (fbResult.success) {
+            trackingEntry.fbPostId = fbResult.postId;
+            trackingEntry.type = fbResult.imageUrl ? 'photo' : 'text';
           }
-
-          data = await resp.json();
-
-          if (data.id || data.post_id) {
-            // Track successful Facebook post
-            const trackingEntry = {
-              fbPostId: data.id || data.post_id,
-              postedAt: new Date().toISOString(),
-              type: imageUrl ? 'photo' : 'text'
-            };
-
-            // Instagram: 2-step container publish
-            let igResult = null;
-            if (IG_USER_ID && imageUrl) {
-              try {
-                const igCaption = generateInstagramCaption(event);
-                // Step 1: Create container
-                const containerResp = await fetch(`https://graph.facebook.com/v25.0/${IG_USER_ID}/media`, {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    image_url: imageUrl,
-                    caption: igCaption,
-                    access_token: PAGE_TOKEN
-                  })
-                });
-                const containerData = await containerResp.json();
-
-                if (containerData.id) {
-                  // Wait for container to be ready (check status, retry up to 5 times)
-                  let containerReady = false;
-                  for (let attempt = 0; attempt < 5; attempt++) {
-                    await new Promise(r => setTimeout(r, 2000)); // wait 2 seconds
-                    const statusResp = await fetch(`https://graph.facebook.com/v25.0/${containerData.id}?fields=status_code&access_token=${PAGE_TOKEN}`);
-                    const statusData = await statusResp.json();
-                    if (statusData.status_code === 'FINISHED') {
-                      containerReady = true;
-                      break;
-                    }
-                    if (statusData.status_code === 'ERROR') break;
-                  }
-
-                  if (containerReady) {
-                    // Step 2: Publish container
-                    const publishResp = await fetch(`https://graph.facebook.com/v25.0/${IG_USER_ID}/media_publish`, {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                        creation_id: containerData.id,
-                        access_token: PAGE_TOKEN
-                      })
-                    });
-                    const publishData = await publishResp.json();
-                    if (publishData.id) {
-                      trackingEntry.igPostId = publishData.id;
-                      igResult = { success: true, igPostId: publishData.id };
-                    } else {
-                      igResult = { success: false, error: publishData.error };
-                    }
-                  } else {
-                    igResult = { success: false, error: 'Container not ready after retries' };
-                  }
-                } else {
-                  igResult = { success: false, error: containerData.error };
-                }
-              } catch (igErr) {
-                igResult = { success: false, error: igErr.message };
-              }
+          
+          // Instagram (only if FB succeeded and image available)
+          let igResult = null;
+          if (IG_USER_ID && fbResult.success && fbResult.imageUrl) {
+            try {
+              igResult = await publishToInstagram(event, IG_USER_ID, PAGE_TOKEN);
+              if (igResult.success) trackingEntry.igPostId = igResult.igPostId;
+            } catch (igErr) {
+              igResult = { success: false, error: igErr.message };
             }
-
-            posted[String(event.id)] = trackingEntry;
-            results.push({ eventId: event.id, title: event.title, success: true, fbPostId: data.id || data.post_id, instagram: igResult });
-          } else {
-            results.push({ eventId: event.id, title: event.title, success: false, error: data.error });
           }
+
+          posted[String(event.id)] = trackingEntry;
+          results.push({ eventId: event.id, title: event.title, success: fbResult.success, fbPostId: fbResult.postId, instagram: igResult, error: fbResult.error });
         } catch (err) {
           results.push({ eventId: event.id, title: event.title, success: false, error: err.message });
         }
       }
 
-      // Save updated tracking data
-      await trackingStore.setJSON("posted-events", posted);
+      await saveTracking(posted);
 
       return new Response(JSON.stringify({
         action: 'publish',
@@ -365,22 +135,25 @@ export default async (req, context) => {
       }), { headers: corsHeaders });
 
     } else if (action === 'tracking') {
-      // View tracking data
       return new Response(JSON.stringify({ posted }), { headers: corsHeaders });
 
     } else if (action === 'reset-tracking') {
-      // Reset tracking — for testing only
-      await trackingStore.setJSON("posted-events", {});
+      await saveTracking({});
       return new Response(JSON.stringify({ message: 'Tracking reset' }), { headers: corsHeaders });
+
+    } else if (action === 'delete') {
+      const PAGE_TOKEN = Netlify.env.get('META_PAGE_ACCESS_TOKEN');
+      const postId = url.searchParams.get('post_id');
+      if (!postId || !PAGE_TOKEN) {
+        return new Response(JSON.stringify({ error: 'post_id and token required' }), { status: 400, headers: corsHeaders });
+      }
+      const resp = await fetch('https://graph.facebook.com/v25.0/' + postId + '?access_token=' + PAGE_TOKEN, { method: 'DELETE' });
+      return new Response(JSON.stringify(await resp.json()), { headers: corsHeaders });
     }
 
-    return new Response(JSON.stringify({ error: 'Use ?action=preview, publish, publish-one&id=X, tracking, or reset-tracking' }), {
-      status: 400, headers: corsHeaders
-    });
+    return new Response(JSON.stringify({ error: 'Use ?action=preview, publish, publish-one&id=X, tracking, reset-tracking, verify, token-info, or delete&post_id=X' }), { status: 400, headers: corsHeaders });
 
   } catch (err) {
-    return new Response(JSON.stringify({ error: err.message, stack: err.stack }), {
-      status: 500, headers: corsHeaders
-    });
+    return new Response(JSON.stringify({ error: err.message, stack: err.stack }), { status: 500, headers: corsHeaders });
   }
 };
