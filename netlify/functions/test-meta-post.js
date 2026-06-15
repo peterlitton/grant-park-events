@@ -27,7 +27,7 @@ export default async (req, context) => {
     const action = url.searchParams.get('action') || 'verify';
 
     if (action === 'verify') {
-      const resp = await fetch('https://graph.facebook.com/v25.0/' + PAGE_ID + '?fields=name,id,fan_count&access_token=' + PAGE_TOKEN);
+      const resp = await fetch('https://graph.facebook.com/v25.0/' + PAGE_ID + '?fields=name,id,fan_count,instagram_business_account&access_token=' + PAGE_TOKEN);
       const data = await resp.json();
       return new Response(JSON.stringify(data), { headers: corsHeaders });
 
