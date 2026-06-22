@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.41';
+var BUILD_VERSION = 'v2.3.1-Build10.42';
 var BUILD_DATE = '2026-06-22';
-var BUILD_NOTES = 'Poster QR Visits dashboard card; QR Code Registry; replace scan.page poster QR with self-hosted /poster-qr (email asset + cache-buster)';
+var BUILD_NOTES = 'Campaign builder: exclude hidden events (published === false) from date-range picker';

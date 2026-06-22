@@ -39,6 +39,7 @@ check_feature "admin.html" "eventVisibilityFilter" "Event visibility filter"
 check_feature "admin.html" "fullSeoValidating" "Full SEO validation"
 check_feature "admin.html" "admin-index-report" "Index Report link"
 check_feature "admin.html" "flex flex-wrap" "Tab wrap layout"
+check_feature "admin.html" "Build10.42: Exclude hidden events" "Campaign date-range picker excludes hidden events (published === false)"
 
 echo ""
 echo "--- admin-dashboard.html ---"

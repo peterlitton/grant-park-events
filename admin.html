@@ -115,7 +115,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.41';
+    var BUILD_VERSION = 'v2.3.1-Build10.42';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -4424,6 +4424,11 @@
           console.log('[ADMIN] Filtering events for date range:', formData.startDate, 'to', formData.endDate);
           
           const filtered = events.filter(event => {
+            // Build10.42: Exclude hidden events (published === false)
+            if (event.published === false) {
+              return false;
+            }
+
             // Exclude Navy Pier Fireworks
             if (event.title === 'Navy Pier Fireworks') {
               return false;

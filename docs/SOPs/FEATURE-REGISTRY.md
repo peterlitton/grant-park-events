@@ -48,6 +48,12 @@
 |---------|-------------|----------|-------------|
 | Email header QR image | `poster-qr-code.png` | Build10.41 | Self-hosted poster QR in email template (replaced scan.page code) |
 
+## admin.html
+
+| Feature | Grep Pattern | Added In | Description |
+|---------|-------------|----------|-------------|
+| Campaign picker hides hidden events | `Build10.42: Exclude hidden events` | Build10.42 | Date-range event picker excludes `published === false` events |
+
 ## Edge functions
 
 | Feature | File Must Exist | Added In | Description |
