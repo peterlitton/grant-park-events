@@ -1,0 +1,24 @@
+BUILD10.41 RELEASE MANIFEST — v2.3.1-Build10.41 (2026-06-22)
+============================================================
+This release mirrors the repo layout. Copy each file to the matching
+path in peterlitton/grant-park-events and push. No other files change.
+
+FILE (in this release)                          ->  REPO DESTINATION
+------------------------------------------------------------------------
+admin-dashboard.html                            ->  /admin-dashboard.html      [CODE: Poster QR Visits card + version]
+admin.html                                      ->  /admin.html                [version string only]
+index.html                                      ->  /index.html                [version string only]
+build-version.js                                ->  /build-version.js          [version + notes]
+CURRENT-BUILD.md                                ->  /CURRENT-BUILD.md           [version + date]
+netlify/functions/generate-email-html.js        ->  /netlify/functions/generate-email-html.js  [email QR cache-buster ?v=10.41]
+assets/common/poster-qr-code.png                ->  /assets/common/poster-qr-code.png          [REPLACEMENT QR -> /poster-qr]
+docs/SOPs/QR-CODE-REGISTRY.md                    ->  /docs/SOPs/QR-CODE-REGISTRY.md              [NEW]
+docs/SOPs/FEATURE-REGISTRY.md                    ->  /docs/SOPs/FEATURE-REGISTRY.md              [QR signatures added]
+docs/SOPs/feature-registry-check.sh             ->  /docs/SOPs/feature-registry-check.sh        [QR signatures added]
+docs/BUILDS/BUILD10.41-RELEASE-NOTES.md          ->  /docs/BUILDS/BUILD10.41-RELEASE-NOTES.md    [NEW]
+README.md                                        ->  (release doc — do not deploy)
+MANIFEST.txt                                     ->  (this file — do not deploy)
+
+VALIDATION (pre-delivery): braces 374/374, parens 571/571, no double commas,
+node -c generate-email-html.js OK, node --check dashboard JS OK,
+feature registry ALL PASS (2 QR cards + email QR), 5/5 files at v2.3.1-Build10.41.

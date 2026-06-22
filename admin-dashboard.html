@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.40';
+    var BUILD_VERSION = 'v2.3.1-Build10.41';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -218,6 +218,7 @@ const Dashboard = () => {
   const [engagement, setEngagement] = useState({ loading: true, data: null });
   const [campaigns, setCampaigns] = useState({ loading: true, data: null });
   const [qrTraffic, setQrTraffic] = useState({ loading: true, data: null });
+  const [qrTrafficPoster, setQrTrafficPoster] = useState({ loading: true, data: null });
   const [realtime, setRealtime] = useState({ loading: true, data: null });
   const [todayTraffic, setTodayTraffic] = useState({ loading: true, data: null });
   const [todayPages, setTodayPages] = useState({ loading: true, data: null });
@@ -254,7 +255,8 @@ const Dashboard = () => {
       settle('/.netlify/functions/ga4-analytics?metric=realtime'),
       settle('/.netlify/functions/ga4-analytics?metric=today-traffic'),
       settle('/.netlify/functions/ga4-analytics?metric=today-pages'),
-      settle('/.netlify/functions/ga4-analytics?metric=qr-traffic')
+      settle('/.netlify/functions/ga4-analytics?metric=qr-traffic'),
+      settle('/.netlify/functions/ga4-analytics?metric=qr-traffic&page=/poster-qr')
     ]);
     if (results[0]) setGsc({ loading: false, data: results[0] });
     if (results[1]) setRankings({ loading: false, data: results[1] });
@@ -271,6 +273,7 @@ const Dashboard = () => {
     if (results[12]) setTodayTraffic({ loading: false, data: results[12] });
     if (results[13]) setTodayPages({ loading: false, data: results[13] });
     if (results[14]) setQrTraffic({ loading: false, data: results[14] });
+    if (results[15]) setQrTrafficPoster({ loading: false, data: results[15] });
     setLastRefresh(new Date());
     setRefreshing(false);
   };
@@ -474,6 +477,18 @@ const Dashboard = () => {
       children: qrTraffic.loading ? e('div', { className: 'h-32 bg-gray-50 rounded animate-pulse' }) :
         qrTraffic.data && qrTraffic.data.days && qrTraffic.data.days.length > 0 ?
           e(QrTrafficChart, { days: qrTraffic.data.days })
+        : e('div', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No QR traffic data found')
+    }),
+
+    // Build10.41: Poster QR Visits (mirrors Business Card QR; pagePath /poster-qr)
+    Card({ title: 'Poster QR Visits', subtitle: 'Page: /poster-qr · last 30 days',
+      headerRight: !qrTrafficPoster.loading && qrTrafficPoster.data ? e('div', { className: 'text-right' },
+        e('div', { className: 'text-xl font-bold' }, fmt(qrTrafficPoster.data.total)),
+        e('div', { className: 'text-[11px] text-gray-400' }, 'page views')
+      ) : null,
+      children: qrTrafficPoster.loading ? e('div', { className: 'h-32 bg-gray-50 rounded animate-pulse' }) :
+        qrTrafficPoster.data && qrTrafficPoster.data.days && qrTrafficPoster.data.days.length > 0 ?
+          e(QrTrafficChart, { days: qrTrafficPoster.data.days })
         : e('div', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No QR traffic data found')
     })
   ));

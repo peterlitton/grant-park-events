@@ -41,8 +41,17 @@ check_feature "admin.html" "admin-index-report" "Index Report link"
 check_feature "admin.html" "flex flex-wrap" "Tab wrap layout"
 
 echo ""
+echo "--- admin-dashboard.html ---"
+check_feature "admin-dashboard.html" "Business Card QR Visits" "Business Card QR visits card (pagePath /gpe-bcard-qr)"
+check_feature "admin-dashboard.html" "Poster QR Visits" "Poster QR visits card (pagePath /poster-qr)"
+
+echo ""
 echo "--- index.html ---"
 echo "(No feature signatures registered)"
+
+echo ""
+echo "--- netlify/functions/generate-email-html.js ---"
+check_feature "netlify/functions/generate-email-html.js" "poster-qr-code.png" "Email header QR image (self-hosted poster QR)"
 
 echo ""
 echo "--- Edge functions ---"

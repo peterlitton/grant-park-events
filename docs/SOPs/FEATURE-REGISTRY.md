@@ -35,12 +35,24 @@
 
 (No feature signatures registered yet — index.html changes infrequently)
 
+## admin-dashboard.html
+
+| Feature | Grep Pattern | Added In | Description |
+|---------|-------------|----------|-------------|
+| Business Card QR visits card | `Business Card QR Visits` | Build10.37.6 | Campaigns-page card; GA4 pagePath CONTAINS `/gpe-bcard-qr` |
+| Poster QR visits card | `Poster QR Visits` | Build10.41 | Campaigns-page card; GA4 pagePath CONTAINS `/poster-qr` |
+
+## netlify/functions
+
+| Feature | Grep Pattern | Added In | Description |
+|---------|-------------|----------|-------------|
+| Email header QR image | `poster-qr-code.png` | Build10.41 | Self-hosted poster QR in email template (replaced scan.page code) |
+
 ## Edge functions
 
 | Feature | File Must Exist | Added In | Description |
 |---------|----------------|----------|-------------|
 | SEO canonical injection | `netlify/edge-functions/seo-canonical.js` | Build10.17 | Injects correct canonical/og:url into raw HTML |
-
 ### Edge function grep signatures
 
 | Feature | Grep Pattern | Added In | Description |

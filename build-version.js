@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.40';
-var BUILD_DATE = '2026-06-01';
-var BUILD_NOTES = 'Dashboard redesign: card layout, combined search, landing pages, engagement, 30d subscriber chart';
+var BUILD_VERSION = 'v2.3.1-Build10.41';
+var BUILD_DATE = '2026-06-22';
+var BUILD_NOTES = 'Poster QR Visits dashboard card; QR Code Registry; replace scan.page poster QR with self-hosted /poster-qr (email asset + cache-buster)';

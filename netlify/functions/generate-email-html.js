@@ -134,7 +134,7 @@ export default async (req, context) => {
                   </td>
                   <td align="right" valign="middle" width="50%">
                     <!-- QR Code -->
-                    <img src="https://www.grantparkevents.com/assets/common/poster-qr-code.png?v=2.3.0" alt="Scan for events" width="66" height="66" style="display: block;">
+                    <img src="https://www.grantparkevents.com/assets/common/poster-qr-code.png?v=10.41" alt="Scan for events" width="66" height="66" style="display: block;">
                   </td>
                 </tr>
               </table>
