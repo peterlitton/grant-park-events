@@ -21,6 +21,16 @@ An event is included only if it passes every check:
 
 Matching events are sorted ascending by date and **all auto-selected** into `formData.selectedEventIds`. The operator can then deselect individually.
 
+## Data freshness (Build10.43)
+
+The builder operates on the admin app's in-memory `events` state. To guarantee that recent event edits are reflected, **opening the builder always re-fetches events first.** Both entry points — the "➕ Create Campaign" buttons and the per-campaign "Edit" button — route through `openCampaignBuilder(campaign)`, which:
+
+1. sets the editing target (the campaign, or `null` for a new one),
+2. `await`s `refreshEvents()` — a fresh `GET /.netlify/functions/get-events` (served `no-cache`) that replaces the `events` state,
+3. then shows the modal.
+
+While the refresh is in flight the buttons show "⏳ Refreshing events…" and are disabled. If the refresh fails the builder still opens with the current data and a notification is shown (fail-open). This makes stale event data in a generated email structurally impossible under normal operation, rather than relying on a manual page refresh.
+
 ## Notes
 
 - "Hidden" everywhere in the admin = `published === false`. See the Event Manager visibility filter for the canonical usage.

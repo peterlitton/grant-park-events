@@ -11,7 +11,7 @@
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="/build-version.js"></script>
   <script>
-    var BUILD_VERSION = 'v2.3.1-Build10.42';
+    var BUILD_VERSION = 'v2.3.1-Build10.43';
     var BUILD_DATE = '2026-06-04';
   </script>
   <style>
@@ -480,7 +480,7 @@ const Dashboard = () => {
         : e('div', { className: 'text-xs text-gray-400 py-4 text-center' }, 'No QR traffic data found')
     }),
 
-    // Build10.42: Poster QR Visits (mirrors Business Card QR; pagePath /poster-qr)
+    // Build10.43: Poster QR Visits (mirrors Business Card QR; pagePath /poster-qr)
     Card({ title: 'Poster QR Visits', subtitle: 'Page: /poster-qr · last 30 days',
       headerRight: !qrTrafficPoster.loading && qrTrafficPoster.data ? e('div', { className: 'text-right' },
         e('div', { className: 'text-xl font-bold' }, fmt(qrTrafficPoster.data.total)),

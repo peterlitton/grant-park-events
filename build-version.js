@@ -20,6 +20,6 @@
 // Created: Build10.14.8.3 (2026-02-09)
 // ============================================================
 
-var BUILD_VERSION = 'v2.3.1-Build10.42';
+var BUILD_VERSION = 'v2.3.1-Build10.43';
 var BUILD_DATE = '2026-06-22';
-var BUILD_NOTES = 'Campaign builder: exclude hidden events (published === false) from date-range picker';
+var BUILD_NOTES = 'Campaign builder Create + Edit re-fetch events before opening (always fresh in emails)';

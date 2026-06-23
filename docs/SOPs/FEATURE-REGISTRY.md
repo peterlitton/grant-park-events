@@ -52,7 +52,8 @@
 
 | Feature | Grep Pattern | Added In | Description |
 |---------|-------------|----------|-------------|
-| Campaign picker hides hidden events | `Build10.42: Exclude hidden events` | Build10.42 | Date-range event picker excludes `published === false` events |
+| Campaign picker hides hidden events | `Exclude hidden events from campaign picker` | Build10.42 | Date-range event picker excludes `published === false` events |
+| Campaign builder refreshes events on open | `openCampaignBuilder` | Build10.43 | Create + Edit re-fetch events before showing the builder modal |
 
 ## Edge functions
 

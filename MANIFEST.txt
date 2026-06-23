@@ -1,19 +1,19 @@
-BUILD10.42 RELEASE MANIFEST — v2.3.1-Build10.42 (2026-06-22)
+BUILD10.43 RELEASE MANIFEST — v2.3.1-Build10.43 (2026-06-23)
 ============================================================
 Copy each file to the matching path in peterlitton/grant-park-events and push.
 
 FILE                                      ->  REPO DESTINATION
-admin.html                                ->  /admin.html                [FIX: exclude hidden events from picker + version]
+admin.html                                ->  /admin.html                [FIX: Create+Edit refresh events before opening builder + version]
 admin-dashboard.html                      ->  /admin-dashboard.html      [version only]
 index.html                                ->  /index.html                [version only]
 build-version.js                          ->  /build-version.js          [version + notes]
 CURRENT-BUILD.md                          ->  /CURRENT-BUILD.md           [version + date]
-docs/BUILDS/BUILD10.42-RELEASE-NOTES.md   ->  /docs/BUILDS/...            [NEW]
-docs/SOPs/CAMPAIGN-EVENT-PICKER.md        ->  /docs/SOPs/...              [NEW — picker rules]
-docs/SOPs/FEATURE-REGISTRY.md             ->  /docs/SOPs/...             [hidden-exclusion registered]
-docs/SOPs/feature-registry-check.sh       ->  /docs/SOPs/...             [hidden-exclusion registered]
+docs/BUILDS/BUILD10.43-RELEASE-NOTES.md   ->  /docs/BUILDS/...            [NEW]
+docs/SOPs/CAMPAIGN-EVENT-PICKER.md        ->  /docs/SOPs/...              [data-freshness section added]
+docs/SOPs/FEATURE-REGISTRY.md             ->  /docs/SOPs/...             [refresh-on-open registered; hidden signature made version-independent]
+docs/SOPs/feature-registry-check.sh       ->  /docs/SOPs/...             [same registry updates]
 
-CHANGE: admin.html date-range filter now drops events with published === false.
-NOT CHANGED: Navy Pier Summer Fireworks (legacy line left intentionally as-is).
-VALIDATION: braces 1478/1478, parens 2675/2675, no double commas,
-node --check OK, feature registry ALL PASS, 5/5 files at v2.3.1-Build10.42.
+CHANGE: All three campaign-builder entry points (2x Create, 1x Edit) re-fetch
+get-events before opening the modal, via shared openCampaignBuilder() handler.
+VALIDATION: braces 1480/1480, parens 2689/2689, no double commas,
+node --check OK, feature registry ALL PASS, 5/5 files at v2.3.1-Build10.43.

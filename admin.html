@@ -115,7 +115,7 @@
   <script>
     // Build10.15: Inline version — immune to CDN caching of build-version.js
     // This MUST match build-version.js. Version Gate Script enforces this.
-    var BUILD_VERSION = 'v2.3.1-Build10.42';
+    var BUILD_VERSION = 'v2.3.1-Build10.43';
     var BUILD_DATE = '2026-03-19';
   </script>
 
@@ -1319,6 +1319,7 @@
       const [campaigns, setCampaigns] = useState([]);
       const [showCampaignBuilder, setShowCampaignBuilder] = useState(false);
       const [editingCampaign, setEditingCampaign] = useState(null);
+      const [refreshingEvents, setRefreshingEvents] = useState(false);
       const [campaignLoading, setCampaignLoading] = useState(false);
       
       // Social Media state (Build71.1)
@@ -1801,6 +1802,30 @@
         showNotification('Campaign deleted!');
       };
       
+      // Build10.43: Always open the campaign builder with fresh event data.
+      // Re-fetch events from get-events (served no-cache) before showing the
+      // modal so recent event edits are always reflected in the email.
+      const refreshEvents = async () => {
+        const response = await fetch('/.netlify/functions/get-events');
+        if (!response.ok) throw new Error('get-events returned ' + response.status);
+        const eventsData = await response.json();
+        setEvents(eventsData);
+      };
+
+      const openCampaignBuilder = async (campaign) => {
+        setEditingCampaign(campaign || null);
+        setRefreshingEvents(true);
+        try {
+          await refreshEvents();
+        } catch (error) {
+          console.error('[ADMIN] Event refresh before builder failed:', error);
+          showNotification('Could not refresh events — using current data');
+        } finally {
+          setRefreshingEvents(false);
+          setShowCampaignBuilder(true);
+        }
+      };
+
       const createCampaign = async (campaignData) => {
         try {
           console.log('[ADMIN] Creating new campaign');
@@ -2857,12 +2882,10 @@
                     )
                   ),
                   React.createElement('button', {
-                    onClick: () => {
-                      setEditingCampaign(null);
-                      setShowCampaignBuilder(true);
-                    },
-                    className: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 shadow-lg transition'
-                  }, '➕ Create Campaign')
+                    onClick: () => openCampaignBuilder(null),
+                    disabled: refreshingEvents,
+                    className: 'bg-gradient-to-r from-purple-600 to-purple-700 text-white px-6 py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 shadow-lg transition disabled:opacity-60'
+                  }, refreshingEvents ? '⏳ Refreshing events…' : '➕ Create Campaign')
                 )
               ),
               
@@ -2873,12 +2896,10 @@
                   React.createElement('h3', { className: 'text-xl font-bold text-gray-800 mb-2' }, 'No campaigns yet'),
                   React.createElement('p', { className: 'text-gray-600 mb-4' }, 'Create your first email campaign to get started'),
                   React.createElement('button', {
-                    onClick: () => {
-                      setEditingCampaign(null);
-                      setShowCampaignBuilder(true);
-                    },
-                    className: 'bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition inline-block'
-                  }, '➕ Create Campaign')
+                    onClick: () => openCampaignBuilder(null),
+                    disabled: refreshingEvents,
+                    className: 'bg-purple-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-purple-700 transition inline-block disabled:opacity-60'
+                  }, refreshingEvents ? '⏳ Refreshing events…' : '➕ Create Campaign')
                 )
               :
                 React.createElement('div', { className: 'bg-white rounded-xl shadow-md overflow-hidden' },
@@ -2927,11 +2948,9 @@
                             React.createElement('td', { className: 'px-6 py-4' },
                               React.createElement('div', { className: 'flex gap-2' },
                                 React.createElement('button', {
-                                  onClick: () => {
-                                    setEditingCampaign(campaign);
-                                    setShowCampaignBuilder(true);
-                                  },
-                                  className: 'text-blue-600 hover:text-blue-800 font-medium text-sm'
+                                  onClick: () => openCampaignBuilder(campaign),
+                                  disabled: refreshingEvents,
+                                  className: 'text-blue-600 hover:text-blue-800 font-medium text-sm disabled:opacity-60'
                                 }, 'Edit'),
                                 React.createElement('button', {
                                   onClick: () => deleteCampaign(campaign.id),
@@ -4424,7 +4443,7 @@
           console.log('[ADMIN] Filtering events for date range:', formData.startDate, 'to', formData.endDate);
           
           const filtered = events.filter(event => {
-            // Build10.42: Exclude hidden events (published === false)
+            // Exclude hidden events from campaign picker (published === false; added Build10.42)
             if (event.published === false) {
               return false;
             }
